@@ -36,11 +36,11 @@ gcap.plotCircos <- function(fCNA,
   data_bed <- merge(fCNA$data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
   data_bed$amplicon_type <- ifelse(data_bed$amplicon_type %in% c("circular", "possibly_circular"), "circular", "noncircular")
   data_bed <- data_bed[!is.na(data_bed$gene_id) & data_bed$chrom %in% chrs,
-                       c(
-                         "chrom", "start", "end", "total_cn", "gene_id",
-                         "amplicon_type"
-                       ),
-                       with = FALSE
+    c(
+      "chrom", "start", "end", "total_cn", "gene_id",
+      "amplicon_type"
+    ),
+    with = FALSE
   ]
   colnames(data_bed)[1] <- "chr"
   if (nrow(data_bed) < 1) {
@@ -55,7 +55,7 @@ gcap.plotCircos <- function(fCNA,
     x[, .(freq = .N), by = .(chr, start, end, gene_id)]
   })
   bed_cn <- data.table::dcast(data_bed[, .(total_cn = mean(total_cn, na.rm = T)),
-                                       by = .(chr, start, end, gene_id, amplicon_type)
+    by = .(chr, start, end, gene_id, amplicon_type)
   ],
   chr + start + end + gene_id ~ amplicon_type,
   value.var = "total_cn"
@@ -132,11 +132,11 @@ gcap.plotCircos <- function(fCNA,
 
     ssize <- max(nchar(highlight_genes)) / 8
     circlize::circos.genomicLabels(bed,
-                                   labels = bed$gene_id, side = "outside",
-                                   cex = 0.5 / (ssize),
-                                   connection_height = circlize::mm_h(5 / ssize),
-                                   col = bed_col,
-                                   line_col = bed_col
+      labels = bed$gene_id, side = "outside",
+      cex = 0.5 / (ssize),
+      connection_height = circlize::mm_h(5 / ssize),
+      col = bed_col,
+      line_col = bed_col
     )
     circlize::circos.genomicIdeogram(
       species = genome_build,

@@ -149,7 +149,7 @@ gcap.plotProfile <- function(fCNA,
       amplicon_type %in% "noncircular", "noncircular",
       default = NA
     )]
-    #data <- data[!is.na(amplicon_type)]
+    # data <- data[!is.na(amplicon_type)]
     data[, amplicon_type := factor(amplicon_type, c("noncircular", "circular"))]
   }
   data <- data.table::dcast(
@@ -186,12 +186,12 @@ gcap.plotProfile <- function(fCNA,
   )
 
   ht <- ComplexHeatmap::oncoPrint(data,
-                                  alter_fun = alter_fun, col = col,
-                                  heatmap_legend_param = heatmap_legend_param,
-                                  remove_empty_columns = remove_empty_columns,
-                                  remove_empty_rows = remove_empty_rows,
-                                  show_column_names = show_column_names,
-                                  ...
+    alter_fun = alter_fun, col = col,
+    heatmap_legend_param = heatmap_legend_param,
+    remove_empty_columns = remove_empty_columns,
+    remove_empty_rows = remove_empty_rows,
+    show_column_names = show_column_names,
+    ...
   )
   return(ht)
 }

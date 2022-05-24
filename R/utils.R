@@ -83,10 +83,8 @@ clusterGPosition <- function(dt, distance = 1e7,
 #' set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular"))
 set_default_factor <- function(class, ref_level = "nofocal") {
   class <- fcase(class %in% c("circular", "possibly_circular"), "circular",
-                 class == "noncircular", "noncircular",
-                 default = "nofocal"
+    class == "noncircular", "noncircular",
+    default = "nofocal"
   )
   factor(class, levels = c(ref_level, setdiff(c("nofocal", "noncircular", "circular"), ref_level)))
 }
-
-

@@ -44,7 +44,7 @@ gcap.plotKMcurve <- function(fCNA,
 
   if (is.null(genes)) {
     data <- fCNA$sample_summary[, c("sample", class_col), with = FALSE]
-    colnames(data)[2] = "class"
+    colnames(data)[2] <- "class"
     if (merge_circular & class_col == "class") {
       data[, class := data.table::fcase(
         class %in% c("circular", "possibly_circular"), "circular",
@@ -85,8 +85,8 @@ gcap.plotKMcurve <- function(fCNA,
   }
 
   data <- merge(data, data.table::as.data.table(surv_data),
-                by = "sample",
-                all.x = TRUE
+    by = "sample",
+    all.x = TRUE
   )
 
   if (!is.null(ending_time)) {
@@ -103,11 +103,11 @@ gcap.plotKMcurve <- function(fCNA,
   }
 
   p <- survminer::ggsurvplot(fit,
-                             pval = TRUE, data = data,
-                             palette = palette,
-                             risk.table = TRUE,
-                             legend.labs = cls_lvls,
-                             ...
+    pval = TRUE, data = data,
+    palette = palette,
+    risk.table = TRUE,
+    legend.labs = cls_lvls,
+    ...
   )
   p
 }

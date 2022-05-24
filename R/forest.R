@@ -139,8 +139,8 @@ gcap.plotForest <- function(fCNA,
   }
 
   data <- merge(data, response_data,
-                by = "sample",
-                all.x = TRUE
+    by = "sample",
+    all.x = TRUE
   )
 
   # 这里聚合的数据可以做任意合适的分析

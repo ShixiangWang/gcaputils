@@ -105,25 +105,25 @@ recur_fit_component <- function(fit, dist, threshold, control, model_selection =
   while (sub_len > 0) {
     K <- fit@k
     fit <- tryCatch(flexmix::getModel(fits, which = as.character(K - sub_len)),
-                    error = function(e) {
-                      # If the model is not called by user
-                      # Call it
-                      if (dist == "norm") {
-                        flexmix::flexmix(
-                          dat ~ 1,
-                          model = flexmix::FLXMCnorm1(),
-                          k = K,
-                          control = control
-                        )
-                      } else {
-                        flexmix::flexmix(
-                          dat ~ 1,
-                          model = flexmix::FLXMCmvpois(),
-                          k = K,
-                          control = control
-                        )
-                      }
-                    }
+      error = function(e) {
+        # If the model is not called by user
+        # Call it
+        if (dist == "norm") {
+          flexmix::flexmix(
+            dat ~ 1,
+            model = flexmix::FLXMCnorm1(),
+            k = K,
+            control = control
+          )
+        } else {
+          flexmix::flexmix(
+            dat ~ 1,
+            model = flexmix::FLXMCmvpois(),
+            k = K,
+            control = control
+          )
+        }
+      }
     )
 
     mu <- find_mu(fit)
@@ -248,8 +248,8 @@ stepFlexmix_v2 <- function(..., k = NULL, nrep = 3, verbose = TRUE, drop = TRUE,
     return(z[[1]])
   } else {
     z <- return(new("stepFlexmix",
-                    models = z, k = as.integer(names(z)),
-                    nrep = as.integer(nrep), logLiks = logLiks, call = MYCALL
+      models = z, k = as.integer(names(z)),
+      nrep = as.integer(nrep), logLiks = logLiks, call = MYCALL
     ))
     if (unique) {
       z <- unique(z)
