@@ -2,9 +2,10 @@
 
 # File R/profile.R: @testexamples
 
-test_that("Function gcap.plotProfile() @ L115", {
+test_that("Function gcap.plotProfile() @ L116", {
   
   
+  library(gcap)
   if (require("ComplexHeatmap") && require("IDConverter")) {
     data("ascn")
     data <- ascn

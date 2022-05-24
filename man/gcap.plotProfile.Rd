@@ -57,6 +57,7 @@ to modify the result plot in depth.
 }
 \examples{
 \donttest{
+library(gcap)
 if (require("ComplexHeatmap") && require("IDConverter")) {
   data("ascn")
   data <- ascn

@@ -12,8 +12,10 @@ BugReports: https://github.com/ShixiangWang/gcaputils/issues
 Depends: 
     R (>= 3.5)
 Imports: 
+    data.table,
     circlize,
     ComplexHeatmap (>= 2.5.2),
+    flexmix,
     gcap,
     ggplot2,
     IDConverter (>= 0.3.0),

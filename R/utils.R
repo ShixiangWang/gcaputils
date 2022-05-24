@@ -1,11 +1,10 @@
 .check_install <- function(pkg, bioc = FALSE, ...) {
-  lg <- set_logger()
   install_func <- if (bioc) BiocManager::install else utils::install.packages
   if (bioc) {
     .check_install("BiocManager")
   }
   if (!requireNamespace(pkg)) {
-    lg$info("installing required package {pkg}")
+    message("installing required package {pkg}")
     install_func(pkg, ...)
   }
 }
