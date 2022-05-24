@@ -34,10 +34,12 @@
 #'   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
 #'   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 #'
-#'   gcap.plotProfile(rv, samples = c("B", "A", "C"))
+#'   data2 <- rv$getGeneSummary(return_mat = TRUE)
+#'   gcap.plotProfile(data2)
 #'
 #'   rv$convertGeneID()
-#'   ht <- gcap.plotProfile(rv,
+#'   data2 <- rv$getGeneSummary(return_mat = TRUE)
+#'   ht <- gcap.plotProfile(data2,
 #'     samples = c("B", "A", "C", "D", "F"),
 #'     genes = unique(rv$data$gene_id)[1:10],
 #'     top_annotation = ComplexHeatmap::HeatmapAnnotation(
@@ -113,13 +115,10 @@
 #' expect_is(p5, "ggplot")
 #' expect_is(p6, "ggplot")
 #' expect_is(zz, "list")
-gcap.plotProfile <- function(fCNA,
+gcap.plotProfile <- function(data,
                              genes = NULL,
                              samples = NULL,
                              top_n = NULL,
-                             top_n_by = c("circular", "Total", "noncircular"),
-                             only_circular = FALSE,
-                             merge_circular = TRUE,
                              show_column_names = TRUE,
                              remove_empty_columns = FALSE,
                              remove_empty_rows = TRUE,
@@ -130,45 +129,11 @@ gcap.plotProfile <- function(fCNA,
                                "possibly_circular" = "#FFCCCC"
                              ),
                              ...) {
-  stopifnot(inherits(fCNA, "fCNA"))
+  stopifnot(inherits(data, "data.frame") | inherits(data, "matrix"))
   .check_install("ComplexHeatmap")
-  if (nrow(fCNA$data) == 0) {
-    warning("No data to plot", immediate. = TRUE)
-    return(NULL)
-  }
 
-  data <- data.table::copy(fCNA$data)[!is.na(gene_id)]
-  if (only_circular) {
-    data[, amplicon_type := data.table::fcase(
-      amplicon_type %in% c("circular", "possibly_circular"), amplicon_type,
-      default = NA
-    )]
-  }
-  if (merge_circular) {
-    data[, amplicon_type := data.table::fcase(
-      amplicon_type %in% c("circular", "possibly_circular"), "circular",
-      amplicon_type %in% "noncircular", "noncircular",
-      default = NA
-    )]
-    # data <- data[!is.na(amplicon_type)]
-    data[, amplicon_type := factor(amplicon_type, c("noncircular", "circular"))]
-  }
-  data <- data.table::dcast(
-    data,
-    gene_id ~ sample,
-    value.var = "amplicon_type", fill = NA,
-    drop = FALSE, fun.aggregate = function(x) x[1]
-  )
-
-  if (!is.null(top_n)) {
-    gene_info <- fCNA$gene_summary[!is.na(gene_id)]
-    orders <- do.call("order", args = c(lapply(top_n_by, function(x) gene_info[[x]]), decreasing = TRUE))
-    genes <- gene_info[orders]$gene_id[seq_len(top_n)]
-  }
-
-  data <- data.frame(data[, -1], row.names = data[[1]])
   if (!is.null(genes)) {
-    data <- data[genes, ]
+    data <- data[genes, , drop = FALSE]
     if (nrow(data) == 0) {
       warning("No gene left to plot", immediate. = TRUE)
       return(NULL)
@@ -179,11 +144,15 @@ gcap.plotProfile <- function(fCNA,
     data <- data[, samples, drop = FALSE]
   }
 
+  if (!is.null(top_n)) {
+    top_n <- min(top_n, nrow(data))
+    data <- data[seq_len(top_n), ]
+  }
+
   alter_fun <- list(
     background = ComplexHeatmap::alter_graphic("rect", fill = "#CCCCCC"),
     circular = ComplexHeatmap::alter_graphic("rect", fill = col["circular"]),
-    noncircular = ComplexHeatmap::alter_graphic("rect", fill = col["noncircular"]),
-    possibly_circular = ComplexHeatmap::alter_graphic("rect", fill = col["possibly_circular"])
+    noncircular = ComplexHeatmap::alter_graphic("rect", fill = col["noncircular"])
   )
 
   ht <- ComplexHeatmap::oncoPrint(data,

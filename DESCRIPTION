@@ -13,22 +13,24 @@ Depends:
     R (>= 3.5)
 Imports: 
     data.table,
-    circlize,
-    ComplexHeatmap (>= 2.5.2),
-    flexmix,
-    gcap (>= 0.20),
+    gcap (>= 0.20.1),
     ggplot2,
     IDConverter (>= 0.3.0),
     Rcpp,
     regport (>= 0.2.0),
     scales,
-    survival,
-    survminer
+    survival
 Suggests:
+    circlize,
     clusterProfiler,
+    ComplexHeatmap (>= 2.5.2),
     fgsea,
+    flexmix,
     msigdbr,
+    survminer,
     testthat (>= 3.0.0)
+LinkingTo: 
+    Rcpp
 Remotes: 
     github::ShixiangWang/IDConverter
 biocViews:
@@ -38,5 +40,3 @@ LazyData: true
 Roxygen: list(markdown = TRUE, roclets = c("collate", "namespace", "rd",
     "roxytest::testthat_roclet"))
 RoxygenNote: 7.1.2
-LinkingTo: 
-    Rcpp

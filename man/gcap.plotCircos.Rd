@@ -7,7 +7,7 @@
 gcap.plotCircos(
   fCNA,
   highlight_genes = NULL,
-  clust_distance = 10000000,
+  clust_distance = 1e+07,
   col = c("#FF000080", "#0000FF80"),
   genome_build = c("hg38", "hg19"),
   chrs = paste0("chr", 1:22),

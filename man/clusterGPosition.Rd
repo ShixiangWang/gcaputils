@@ -6,7 +6,7 @@
 \usage{
 clusterGPosition(
   dt,
-  distance = 10000000,
+  distance = 1e+07,
   no_annotation = FALSE,
   genome_build = c("hg38", "hg19"),
   simplify = TRUE

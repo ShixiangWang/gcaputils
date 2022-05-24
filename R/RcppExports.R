@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 calc_dist <- function(x) {
-    .Call('_gcaputils_calc_dist', PACKAGE = 'gcaputils', x)
+    .Call(`_gcaputils_calc_dist`, x)
 }
 

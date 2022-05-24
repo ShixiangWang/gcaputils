@@ -5,13 +5,10 @@
 \title{Draw Oncoprint for fCNA Profile Visualization}
 \usage{
 gcap.plotProfile(
-  fCNA,
+  data,
   genes = NULL,
   samples = NULL,
   top_n = NULL,
-  top_n_by = c("circular", "Total", "noncircular"),
-  only_circular = FALSE,
-  merge_circular = TRUE,
   show_column_names = TRUE,
   remove_empty_columns = FALSE,
   remove_empty_rows = TRUE,
@@ -21,19 +18,11 @@ gcap.plotProfile(
 )
 }
 \arguments{
-\item{fCNA}{a \link{fCNA} object.}
-
 \item{genes}{a list of genes. Must be subsets of \code{fCNA$data$gene_id}.}
 
 \item{samples}{a vector to subset samples.}
 
 \item{top_n}{top N genes to show.}
-
-\item{top_n_by}{how to order the genes in \code{gene_summary} to get top N genes.}
-
-\item{only_circular}{only show circular amplicon.}
-
-\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular' type.}
 
 \item{show_column_names}{see \code{?ComplexHeatmap::oncoPrint}.}
 
@@ -46,6 +35,14 @@ gcap.plotProfile(
 \item{col}{see \code{?ComplexHeatmap::oncoPrint}.}
 
 \item{...}{Other parameters passing to \code{ComplexHeatmap::oncoPrint}.}
+
+\item{fCNA}{a \link{fCNA} object.}
+
+\item{top_n_by}{how to order the genes in \code{gene_summary} to get top N genes.}
+
+\item{only_circular}{only show circular amplicon.}
+
+\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular' type.}
 }
 \value{
 a \code{Heatmap} object, you can go further modify it.
@@ -67,10 +64,12 @@ if (require("ComplexHeatmap") && require("IDConverter")) {
   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 
-  gcap.plotProfile(rv, samples = c("B", "A", "C"))
+  data2 <- rv$getGeneSummary(return_mat = TRUE)
+  gcap.plotProfile(data2)
 
   rv$convertGeneID()
-  ht <- gcap.plotProfile(rv,
+  data2 <- rv$getGeneSummary(return_mat = TRUE)
+  ht <- gcap.plotProfile(data2,
     samples = c("B", "A", "C", "D", "F"),
     genes = unique(rv$data$gene_id)[1:10],
     top_annotation = ComplexHeatmap::HeatmapAnnotation(

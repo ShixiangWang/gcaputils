@@ -2,7 +2,7 @@
 
 # File R/profile.R: @testexamples
 
-test_that("Function gcap.plotProfile() @ L116", {
+test_that("Function gcap.plotProfile() @ L118", {
   
   
   library(gcap)
@@ -15,10 +15,12 @@ test_that("Function gcap.plotProfile() @ L116", {
     data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
     rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
   
-    gcap.plotProfile(rv, samples = c("B", "A", "C"))
+    data2 <- rv$getGeneSummary(return_mat = TRUE)
+    gcap.plotProfile(data2)
   
     rv$convertGeneID()
-    ht <- gcap.plotProfile(rv,
+    data2 <- rv$getGeneSummary(return_mat = TRUE)
+    ht <- gcap.plotProfile(data2,
       samples = c("B", "A", "C", "D", "F"),
       genes = unique(rv$data$gene_id)[1:10],
       top_annotation = ComplexHeatmap::HeatmapAnnotation(
