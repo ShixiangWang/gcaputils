@@ -2,12 +2,10 @@
 % Please edit documentation in R/enrich.R
 \name{gcap.enrich}
 \alias{gcap.enrich}
-\title{Enrich analysis}
+\title{Enrichment Analysis}
 \usage{
 gcap.enrich(
-  data,
-  target = c(NA, "circular", "noncircular"),
-  class_by = NULL,
+  geneList,
   analysis_func = c("enricher", "fgsea"),
   gene_encode = c("ensembl", "symbol"),
   species = "Homo sapiens",
@@ -18,13 +16,8 @@ gcap.enrich(
 )
 }
 \arguments{
-\item{data}{a \link{fCNA} object, or a vector (list) of genes.
+\item{geneList}{a vector (list) of genes.
 If the vector is named, the names must be genes and values must numeric.}
-
-\item{target}{\code{NA} for general, and "circular" or "noncircular" for specific fCNA type.}
-
-\item{class_by}{if a \link{fCNA} object provided, this specify a column name in \code{fCNA$sample_summary} to
-classify genes into different sample groups for enrichment. NOTE: any group with <10 genes is ignored.}
 
 \item{analysis_func}{analysis function to run.}
 
@@ -45,5 +38,16 @@ or \code{fgsea::fgsea}.}
 depends on \code{data} and \code{analysis_func}.
 }
 \description{
-Enrich analysis
+Enrichment Analysis
+}
+\examples{
+if (require("clusterProfiler")) {
+  gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"), gene_encode = "symbol")
+}
+
+if (require("fgsea")) {
+  gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"),
+    gene_encode = "symbol", analysis_func = "fgsea"
+  )
+}
 }

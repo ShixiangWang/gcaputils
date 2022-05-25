@@ -15,8 +15,6 @@ gcap.plotCircos(
 )
 }
 \arguments{
-\item{fCNA}{a \link{fCNA} object.}
-
 \item{highlight_genes}{gene list to highlight.}
 
 \item{clust_distance}{a distance as cutoff for different clusters.

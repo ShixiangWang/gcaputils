@@ -17,9 +17,9 @@ Imports:
     ggplot2,
     IDConverter (>= 0.3.0),
     Rcpp,
-    regport (>= 0.2.0),
     scales,
-    survival
+    survival,
+    plyr
 Suggests:
     circlize,
     clusterProfiler,

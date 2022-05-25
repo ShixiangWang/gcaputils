@@ -2,13 +2,12 @@
 % Please edit documentation in R/distribution.R
 \name{gcap.plotDistribution}
 \alias{gcap.plotDistribution}
-\title{Draw Gene Amplicon Distribution By Gene or User Specified Class}
+\title{Draw Gene Amplicon Distribution By User Specified Class}
 \usage{
 gcap.plotDistribution(
   fCNA,
   x = NULL,
   x_size = 8,
-  by = c("gene", "sample"),
   merge_circular = TRUE,
   fill = TRUE,
   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
@@ -16,16 +15,12 @@ gcap.plotDistribution(
 )
 }
 \arguments{
-\item{fCNA}{a \link{fCNA} object.}
+\item{fCNA}{a \code{fCNA} object or a \code{data.frame} with at least
+3 columns "sample", "class" and "by".}
 
-\item{x}{a list of gene or a column name in \code{fCNA$sample_summary}.}
+\item{x}{a column name in \code{fCNA$sample_summary}.}
 
 \item{x_size}{font size of x axis text.}
-
-\item{by}{"gene" (default) or "sample" mode. When "sample" is set, it uses the column specified
-by \code{x} to grouping samples.}
-
-\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular' type.}
 
 \item{fill}{if \code{TRUE}, show the percentage instead of count.}
 
@@ -37,8 +32,15 @@ by \code{x} to grouping samples.}
 a ggplot object.
 }
 \description{
-See \code{\link[=gcap.plotProfile]{gcap.plotProfile()}} for examples.
+Draw Gene Amplicon Distribution By User Specified Class
 }
-\seealso{
-\link{gcap.plotProfile} for plot landscape of fCNA, \link{fCNA} for building object.
+\examples{
+set.seed(1234)
+data <- data.frame(
+  sample = sample(LETTERS[1:10], 100, replace = TRUE),
+  class = sample(c("nofocal", "noncircular", "circular"), 100, replace = TRUE),
+  by = sample(1:4, 100, replace = TRUE)
+)
+p <- gcap.plotDistribution(data)
+p
 }

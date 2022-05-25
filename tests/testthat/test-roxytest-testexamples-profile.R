@@ -2,8 +2,7 @@
 
 # File R/profile.R: @testexamples
 
-test_that("Function gcap.plotProfile() @ L118", {
-  
+test_that("Function gcap.plotProfile() @ L56", {
   
   library(gcap)
   if (require("ComplexHeatmap") && require("IDConverter")) {
@@ -32,68 +31,9 @@ test_that("Function gcap.plotProfile() @ L118", {
     ht
     ComplexHeatmap::draw(ht, merge_legends = TRUE)
   
-    #----------------
-    # Plot KM curve
-    #----------------
-    surv_data <- data.frame(
-      sample = rv$sample_summary$sample,
-      time = 3000 * abs(rnorm(nrow(rv$sample_summary))),
-      status = sample(c(0, 1), nrow(rv$sample_summary), replace = TRUE)
-    )
-    surv_data
-    p <- gcap.plotKMcurve(rv, surv_data)
-    p
-  
-    p2 <- gcap.plotKMcurve(rv, surv_data, genes = "MYC")
-    p2
-  
-    # ---------------
-    # Plot forest
-    # ---------------
-    p3 <- gcap.plotForest(rv, surv_data)
-  
-    # Fake some data for gene analysis
-    rv$data[amplicon_type == "circular"]$gene_id[1:10] <- "MYC"
-    rv$data[amplicon_type == "circular"]$gene_id[11:20] <- "EGFR"
-    rv$data[amplicon_type == "circular"]$gene_id[31:35] <- "GSX2"
-    p4 <- gcap.plotForest(rv, surv_data,
-      x = c("TP53", "MYC", "ABC", "EGFR", "GSX2"), x_is_gene = TRUE,
-      ref_line = 1, xlim = c(0, 10)
-    )
-  
-    # Plot on gene clusters
-    gcap.plotForest(rv, surv_data,
-      x = data.frame(
-        cluster = paste0("cluster", c(1, 3, 2, 1, 3)),
-        gene_id = c("TP53", "MYC", "ABC", "EGFR", "GSX2")
-      ), x_is_gene = TRUE,
-      ref_line = 1, xlim = c(0, 10), optimize_model = TRUE
-    ) -> zz
-    # zz$plot
-  
-    # -----------------
-    # Plot distribution
-    # -----------------
-    gcap.plotDistribution(rv)
-    p5 <- gcap.plotDistribution(rv,
-      x = c("MYC", "EGFR", "CDK4", "AKT3"),
-      width = 0.5, x_size = 5, fill = FALSE
-    )
-    p5
-    rv$sample_summary[, ploidy_class := ifelse(ploidy > 2.5, "2+", "2")]
-    p6 <- gcap.plotDistribution(rv, x = "ploidy_class", by = "sample")
-    p6
+    data2 <- rv$getCytobandSummary(return_mat = TRUE)
+    gcap.plotProfile(data2)
   }
-  
   expect_is(ht, "Heatmap")
-  expect_is(p, "ggsurvplot")
-  if (!is.null(p2)) {
-    expect_is(p2, "ggsurvplot")
-  }
-  expect_is(p3, "list")
-  expect_is(p4, "list")
-  expect_is(p5, "ggplot")
-  expect_is(p6, "ggplot")
-  expect_is(zz, "list")
 })
 

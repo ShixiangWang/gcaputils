@@ -2,14 +2,15 @@
 % Please edit documentation in R/kmcurve.R
 \name{gcap.plotKMcurve}
 \alias{gcap.plotKMcurve}
-\title{Draw K-M Curve for fCNA Survival Comparison by Sample or Gene}
+\title{Draw K-M Curve for fCNA Survival Comparison by Sample or Cytoband or Gene}
 \usage{
 gcap.plotKMcurve(
   fCNA,
   surv_data,
   merge_circular = TRUE,
-  genes = NULL,
-  gene_focus = c("fCNA", "circular"),
+  mat = NULL,
+  ID = NULL,
+  focus = c("fCNA", "circular"),
   palette = c("grey", "#0066CC", "#CC0033"),
   class_col = "class",
   ending_time = NULL,
@@ -17,7 +18,7 @@ gcap.plotKMcurve(
 )
 }
 \arguments{
-\item{fCNA}{a \link{fCNA} object.}
+\item{fCNA}{a \href{gcap::fCNA}{fCNA} object.}
 
 \item{surv_data}{survival data, eithor a 3-column \code{data.frame} to store
 sample, time and status, or a length-2 string to specify the colnames
@@ -28,19 +29,22 @@ representing time and status in \code{fCNA$sample_summary}.
 \item status must be 0 or 1.
 }}
 
-\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular' type.}
+\item{merge_circular}{if \code{TRUE}, merge 'circular' and 'possibly_circular'
+as one class.}
 
-\item{genes}{a list of genes. Must be subsets of \code{fCNA$data$gene_id}.}
+\item{mat}{a gene/cytoband-by-sample matrix like \code{data.frame}.}
 
-\item{gene_focus}{focal amplication type you focus on.
+\item{ID}{a list of gene or cytoband IDs.}
+
+\item{focus}{focal amplication type you focus on.
 Can be 'fCNA' or 'circular'. If 'fCNA' selected,
-noncircular and circular genes are included to classify samples.}
+noncircular and circular ID are included to classify samples.}
 
 \item{palette}{plot color palette.}
 
 \item{class_col}{column name in \code{sample_summary} field for classification.
 If you set to other column (you want to run survival analysis with custom column),
-parameters like \code{merge_circular}, \code{genes}, \code{gene_focus}
+parameters like \code{merge_circular}, \code{ID}, \code{focus}
 etc. will be omitted.}
 
 \item{ending_time}{survival analysis ending time. If a numeric ending
@@ -52,8 +56,38 @@ is typed, all survival data longer than the ending time will be rewritten.}
 a plot.
 }
 \description{
-See \code{\link[=gcap.plotProfile]{gcap.plotProfile()}} for examples.
+Draw K-M Curve for fCNA Survival Comparison by Sample or Cytoband or Gene
+}
+\examples{
+\donttest{
+library(gcap)
+if (require("survminer") && require("IDConverter")) {
+  data("ascn")
+  data <- ascn
+
+  # Create fake data
+  set.seed(1234)
+  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+  rv$convertGeneID()
+
+  surv_data <- data.frame(
+    sample = rv$sample_summary$sample,
+    time = 3000 * abs(rnorm(nrow(rv$sample_summary))),
+    status = sample(c(0, 1), nrow(rv$sample_summary), replace = TRUE)
+  )
+  p <- gcap.plotKMcurve(rv, surv_data)
+  p
+
+  p2 <- gcap.plotKMcurve(rv, surv_data,
+    ID = "MYC",
+    mat = rv$getGeneSummary(return_mat = TRUE)
+  )
+
+  p2
+}
+}
 }
 \seealso{
-\link{gcap.plotProfile} for plot landscape of fCNA, \link{fCNA} for building object.
+\link{gcap.plotProfile} for plot landscape of fCNA, \link[gcap:fCNA]{gcap::fCNA} for building object.
 }

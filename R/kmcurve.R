@@ -1,21 +1,23 @@
-#' Draw K-M Curve for fCNA Survival Comparison by Sample or Gene
+#' Draw K-M Curve for fCNA Survival Comparison by Sample or Cytoband or Gene
 #'
-#' See [gcap.plotProfile()] for examples.
-#'
-#' @inheritParams gcap.plotProfile
+#' @param fCNA a [fCNA](gcap::fCNA) object.
 #' @param surv_data survival data, eithor a 3-column `data.frame` to store
 #' sample, time and status, or a length-2 string to specify the colnames
 #' representing time and status in `fCNA$sample_summary`.
 #' - sample must be identical to sample ID in `fCNA`.
 #' - time must be numeric.
 #' - status must be 0 or 1.
-#' @param gene_focus focal amplication type you focus on.
+#' @param mat a gene/cytoband-by-sample matrix like `data.frame`.
+#' @param ID a list of gene or cytoband IDs.
+#' @param merge_circular if `TRUE`, merge 'circular' and 'possibly_circular'
+#' as one class.
+#' @param focus focal amplication type you focus on.
 #' Can be 'fCNA' or 'circular'. If 'fCNA' selected,
-#' noncircular and circular genes are included to classify samples.
+#' noncircular and circular ID are included to classify samples.
 #' @param palette plot color palette.
 #' @param class_col column name in `sample_summary` field for classification.
 #' If you set to other column (you want to run survival analysis with custom column),
-#' parameters like `merge_circular`, `genes`, `gene_focus`
+#' parameters like `merge_circular`, `ID`, `focus`
 #' etc. will be omitted.
 #' @param ending_time survival analysis ending time. If a numeric ending
 #' is typed, all survival data longer than the ending time will be rewritten.
@@ -23,43 +25,74 @@
 #'
 #' @return a plot.
 #' @export
-#' @seealso [gcap.plotProfile] for plot landscape of fCNA, [fCNA] for building object.
+#' @seealso [gcap.plotProfile] for plot landscape of fCNA, [gcap::fCNA] for building object.
+#' @examples
+#' \donttest{
+#' library(gcap)
+#' if (require("survminer") && require("IDConverter")) {
+#'   data("ascn")
+#'   data <- ascn
+#'
+#'   # Create fake data
+#'   set.seed(1234)
+#'   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+#'   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+#'   rv$convertGeneID()
+#'
+#'   surv_data <- data.frame(
+#'     sample = rv$sample_summary$sample,
+#'     time = 3000 * abs(rnorm(nrow(rv$sample_summary))),
+#'     status = sample(c(0, 1), nrow(rv$sample_summary), replace = TRUE)
+#'   )
+#'   p <- gcap.plotKMcurve(rv, surv_data)
+#'   p
+#'
+#'   p2 <- gcap.plotKMcurve(rv, surv_data,
+#'     ID = "MYC",
+#'     mat = rv$getGeneSummary(return_mat = TRUE)
+#'   )
+#'
+#'   p2
+#' }
+#' }
+#' @testexamples
+#' expect_is(p, "ggplot2")
+#' expect_is(p2, "ggplot2")
 gcap.plotKMcurve <- function(fCNA,
                              surv_data,
                              merge_circular = TRUE,
-                             genes = NULL,
-                             gene_focus = c("fCNA", "circular"),
+                             mat = NULL,
+                             ID = NULL,
+                             focus = c("fCNA", "circular"),
                              palette = c("grey", "#0066CC", "#CC0033"),
                              class_col = "class",
                              ending_time = NULL,
                              ...) {
   stopifnot(inherits(fCNA, "fCNA"))
   .check_install("survminer")
-  gene_focus <- match.arg(gene_focus)
+  focus <- match.arg(focus)
 
   if (is.character(surv_data)) {
     surv_data <- fCNA$sample_summary[, c("sample", surv_data), with = FALSE]
   }
   colnames(surv_data)[2:3] <- c("time", "status")
 
-  if (is.null(genes)) {
+  if (is.null(ID)) {
     data <- fCNA$sample_summary[, c("sample", class_col), with = FALSE]
     colnames(data)[2] <- "class"
     if (merge_circular & class_col == "class") {
-      data[, class := data.table::fcase(
-        class %in% c("circular", "possibly_circular"), "circular",
-        class == "noncircular", "noncircular",
-        default = "nofocal"
-      )]
-      data[, class := factor(class, c("nofocal", "noncircular", "circular"))]
+      data[, class := set_default_factor(class)]
     } else if (class_col == "class") {
       data[, class := factor(class, c("nofocal", "noncircular", "possibly_circular", "circular"))]
     }
   } else {
-    # Extract class based on gene
+    if (is.null(mat)) {
+      stop("When you want to specify the genes/cytobands, please input gene/cytoband-by-sample matrix to 'mat'")
+    }
+    # Extract class based on gene/cytoband
     all_samples <- fCNA$sample_summary$sample
     # AMP samples
-    if (gene_focus == "fCNA") {
+    if (focus == "fCNA") {
       types <- c("noncircular", "possibly_circular", "circular")
       labels <- c("fCNA-", "fCNA+")
     } else if (merge_circular) {
@@ -69,18 +102,16 @@ gcap.plotKMcurve <- function(fCNA,
       types <- "circular"
       labels <- c("circular-", "circular+")
     }
-    amp_samples <- unique(fCNA$data[gene_id %in% genes & amplicon_type %in% types]$sample)
-    if (length(amp_samples) == 0L) {
-      warning("No sample amplified based on input genes and options", immediate. = TRUE)
-      return(NULL)
-    }
-    data <- data.table::data.table(
-      sample = c(amp_samples, setdiff(all_samples, amp_samples)),
-      class = c(
-        rep(labels[2], length(amp_samples)),
-        rep(labels[1], length(setdiff(all_samples, amp_samples)))
-      )
+    data <- mat[ID, , drop = FALSE]
+    data <- plyr::ldply(data,
+      function(x) if (any(x %in% types)) labels[2] else labels[1],
+      .id = "sample"
     )
+    colnames(data)[2] <- "class"
+    if (length(table(data$class)) <= 1) {
+      stop("cannot genrate two groups for comparison")
+    }
+
     data$class <- factor(data$class, levels = labels)
   }
 

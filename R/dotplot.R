@@ -8,7 +8,9 @@
 #'
 #' @return a ggplot.
 #' @export
-gcap.dotplot <- function(fCNA, by = c("gene_id", "band", "chr"), filter = cn > 50 | (N > 1 & cn > 20), include = c("circular", "possibly_circular"), ...) {
+gcap.dotplot <- function(fCNA, by = c("gene_id", "band", "chr"),
+                         filter = cn > 50 | (N > 1 & cn > 20),
+                         include = c("circular", "possibly_circular"), ...) {
   .check_install("ggrepel")
   .check_install("cowplot")
   data <- data.table::copy(fCNA$data)
