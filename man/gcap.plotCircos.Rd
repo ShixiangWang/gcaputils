@@ -6,19 +6,20 @@
 \usage{
 gcap.plotCircos(
   fCNA,
-  highlight_genes = NULL,
+  highlights = NULL,
   clust_distance = 1e+07,
   col = c("#FF000080", "#0000FF80"),
   genome_build = c("hg38", "hg19"),
   chrs = paste0("chr", 1:22),
-  ideogram_height = 1
+  ideogram_height = 1,
+  ...
 )
 }
 \arguments{
 \item{fCNA}{a \code{fCNA} object or a \code{data.frame} with at least
 3 columns "sample", "class" and "by".}
 
-\item{highlight_genes}{gene list to highlight.}
+\item{highlights}{gene list to highlight.}
 
 \item{clust_distance}{a distance as cutoff for different clusters.
 Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
@@ -31,6 +32,8 @@ chromosomes, so please don't set value larger than that.}
 \item{chrs}{chromosome names.}
 
 \item{ideogram_height}{ideogram height at default.}
+
+\item{...}{other parameters passing to \code{ggplot2::geom_bar}.}
 }
 \value{
 Nothing.

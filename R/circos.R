@@ -1,7 +1,7 @@
 #' Plot Circos
 #'
 #' @inheritParams gcap.plotDistribution
-#' @param highlight_genes gene list to highlight.
+#' @param highlights gene list to highlight.
 #' @param clust_distance a distance as cutoff for different clusters.
 #' Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
 #' chromosomes, so please don't set value larger than that.
@@ -13,12 +13,12 @@
 #' @return Nothing.
 #' @export
 gcap.plotCircos <- function(fCNA,
-                            highlight_genes = NULL,
+                            highlights = NULL,
                             clust_distance = 1e7,
                             col = c("#FF000080", "#0000FF80"),
                             genome_build = c("hg38", "hg19"),
                             chrs = paste0("chr", 1:22),
-                            ideogram_height = 1) {
+                            ideogram_height = 1, ...) {
   .check_install("circlize")
   .check_install("scales")
   genome_build <- match.arg(genome_build)
@@ -26,14 +26,15 @@ gcap.plotCircos <- function(fCNA,
     system.file("extdata", package = "gcap"),
     paste0(genome_build, "_target_genes.rds")
   ))
-  if (!startsWith(fCNA$data$gene_id[1], "ENSG")) {
+  data = fCNA$getGeneSummary(return_record = TRUE, ...)
+  if (!startsWith(data$gene_id[1], "ENSG")) {
     message("detected you have transformed ENSEMBL ID, also transforming gene annotation data")
     opts <- getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
     options(IDConverter.datapath = opts)
     target_genes$gene_id <- IDConverter::convert_hm_genes(target_genes$gene_id, genome_build = genome_build)
     target_genes <- target_genes[!is.na(target_genes$gene_id), ]
   }
-  data_bed <- merge(fCNA$data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
+  data_bed <- merge(data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
   data_bed$amplicon_type <- ifelse(data_bed$amplicon_type %in% c("circular", "possibly_circular"), "circular", "noncircular")
   data_bed <- data_bed[!is.na(data_bed$gene_id) & data_bed$chrom %in% chrs,
     c(
@@ -49,7 +50,6 @@ gcap.plotCircos <- function(fCNA,
   }
 
   cnrange <- range(data_bed$total_cn, na.rm = TRUE)
-  # nsamples <- nrow(fCNA$sample_summary)
   bed_list <- split(data_bed, data_bed$amplicon_type)
   bed_list <- lapply(bed_list, function(x) {
     x[, .(freq = .N), by = .(chr, start, end, gene_id)]
@@ -75,32 +75,32 @@ gcap.plotCircos <- function(fCNA,
     species = genome_build,
     chromosome.index = chrs,
     track.height = circlize::convert_height(
-      if (!is.null(highlight_genes)) 0 else track_height,
+      if (!is.null(highlights)) 0 else track_height,
       "mm"
     ), ideogram.height = circlize::convert_height(
-      if (!is.null(highlight_genes)) 0 else ideogram_height,
+      if (!is.null(highlights)) 0 else ideogram_height,
       "mm"
     ),
-    plotType = if (!is.null(highlight_genes)) NULL else c("ideogram", "axis", "labels")
+    plotType = if (!is.null(highlights)) NULL else c("ideogram", "axis", "labels")
   )
   on.exit(circlize::circos.clear())
 
-  if (!is.null(highlight_genes)) {
+  if (!is.null(highlights)) {
     # circlize::circos.genomicInitialize(
     #   circlize::read.cytoband(species = genome_build, chromosome.index = chrs)$df,
     #   plotType = "labels"
     # )
-    if (is.data.frame(highlight_genes)) {
-      message("found input a data.frame for highlight genes")
-      stopifnot("gene_id" %in% colnames(highlight_genes))
-      data <- data.table::as.data.table(highlight_genes)
-      highlight_genes <- data$gene_id
+    if (is.data.frame(highlights)) {
+      message("found input a data.frame for highlighting")
+      stopifnot("gene_id" %in% colnames(highlights))
+      data <- data.table::as.data.table(highlights)
+      highlights <- data$gene_id
     } else {
       data <- data.table::data.table()
     }
 
     bed <- unique(data_bed[
-      data_bed$gene_id %in% highlight_genes,
+      data_bed$gene_id %in% highlights,
       c("chr", "start", "end", "gene_id")
     ])
     if (ncol(data) > 0) {
@@ -130,7 +130,7 @@ gcap.plotCircos <- function(fCNA,
       bed$gene_id <- paste0(bed$gene_id, " (", bed$label, ")")
     }
 
-    ssize <- max(nchar(highlight_genes)) / 8
+    ssize <- max(nchar(highlights)) / 8
     circlize::circos.genomicLabels(bed,
       labels = bed$gene_id, side = "outside",
       cex = 0.5 / (ssize),
@@ -191,7 +191,7 @@ draw_freq_track <- function(data, col) {
 draw_bi_track <- function(data, col) {
   circlize::circos.genomicTrack(
     data,
-    # track.height = if (!is.null(highlight_genes)) 0.2 else 0.3, # ylim = c(0, 0.1),
+    # track.height = if (!is.null(highlights)) 0.2 else 0.3, # ylim = c(0, 0.1),
     panel.fun = function(region,
                          value, ...) {
       circlize::circos.genomicPoints(region, value, pch = 16, cex = 0.3, col = col, border = NA)
