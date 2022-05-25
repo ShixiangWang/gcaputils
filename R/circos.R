@@ -1,6 +1,6 @@
-#' Plot Circos for GCAP object
+#' Plot Circos
 #'
-#' @inheritParams gcap.plotProfile
+#' @inheritParams gcap.plotDistribution
 #' @param highlight_genes gene list to highlight.
 #' @param clust_distance a distance as cutoff for different clusters.
 #' Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different

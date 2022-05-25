@@ -22,6 +22,8 @@ gcap.plotDistribution(
 
 \item{x_size}{font size of x axis text.}
 
+\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular'.}
+
 \item{fill}{if \code{TRUE}, show the percentage instead of count.}
 
 \item{palette}{color palette.}

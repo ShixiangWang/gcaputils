@@ -2,7 +2,8 @@
 #'
 #' @param fCNA a [fCNA] object.
 #' @param by the level of focal amplicons.
-#' @param filter a filter expression based on `cn` (CN mean) and `N` (frequency).
+#' @param filter a filter expression based on `cn` (CN mean) and `N` (frequency)
+#' to add text labels.
 #' @param include amplicon type to include for plotting.
 #' @param ... other parameters passing to `ggrepel::geom_label_repel()`.
 #'
@@ -11,6 +12,7 @@
 gcap.dotplot <- function(fCNA, by = c("gene_id", "band", "chr"),
                          filter = cn > 50 | (N > 1 & cn > 20),
                          include = c("circular", "possibly_circular"), ...) {
+  # TODO: to be updated as the ways to obtain amplicons has changed.
   .check_install("ggrepel")
   .check_install("cowplot")
   data <- data.table::copy(fCNA$data)
@@ -31,7 +33,7 @@ gcap.dotplot <- function(fCNA, by = c("gene_id", "band", "chr"),
   p <- ggplot2::ggplot(data = genes_summary, ggplot2::aes(x = N, y = cn)) +
     ggplot2::geom_point(alpha = 0.5, size = 1.2, col = "black") +
     ggrepel::geom_label_repel(
-      ggplot2::aes(label = .data[[by]]),
+      ggplot2::aes_string(label = by),
       data = subset(genes_summary, eval(e)),
       ...
     ) +

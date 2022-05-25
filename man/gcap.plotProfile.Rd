@@ -48,6 +48,7 @@ and \href{https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heat
 to modify the result plot in depth.
 }
 \examples{
+\donttest{
 library(gcap)
 if (require("ComplexHeatmap") && require("IDConverter")) {
   data("ascn")
@@ -65,7 +66,7 @@ if (require("ComplexHeatmap") && require("IDConverter")) {
   data2 <- rv$getGeneSummary(return_mat = TRUE)
   ht <- gcap.plotProfile(data2,
     samples = c("B", "A", "C", "D", "F"),
-    genes = unique(rv$data$gene_id)[1:10],
+    genes = rownames(data2)[1:10],
     top_annotation = ComplexHeatmap::HeatmapAnnotation(
       cbar = ComplexHeatmap::anno_oncoprint_barplot(),
       foo1 = c("g1", "g1", "g2", "g2", "g3"),
@@ -77,6 +78,7 @@ if (require("ComplexHeatmap") && require("IDConverter")) {
 
   data2 <- rv$getCytobandSummary(return_mat = TRUE)
   gcap.plotProfile(data2)
+}
 }
 }
 \seealso{

@@ -12,6 +12,7 @@
 #' @importFrom data.table .SD
 #' @importFrom data.table data.table
 #' @importFrom Rcpp sourceCpp
+#' @importFrom methods is new
 #' @useDynLib gcaputils, .registration = TRUE
 ## usethis namespace: end
 NULL

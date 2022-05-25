@@ -27,7 +27,7 @@
 #' y <- gcap.extractComponents(x, max_comp = 5)
 #' y
 #' @testexamples
-#' expect_equal(nrow(y$params), 3)
+#' expect_equal(length(y), 2)
 gcap.extractComponents <-
   function(dat,
            dist = "norm",
@@ -154,17 +154,15 @@ get_component_parameter <- function(x) {
   # of observations assigned to each of the
   # clusters according to the a-posteriori probabilities.
   .get_weight <- function(mean, x) {
-    wt_tb <- flexmix::clusters(x) %>%
-      table()
+    wt_tb <- table(flexmix::clusters(x))
     wt <- as.numeric(wt_tb)
     if (length(wt) == length(mean)) {
       return(wt)
     } else {
       names(wt) <- names(wt_tb)
-      all_names <- seq_along(mean) %>%
-        as.character()
+      all_names <- as.character(seq_along(mean))
       wt[setdiff(all_names, names(wt))] <- 0
-      wt[sort(names(wt))] %>% as.numeric()
+      as.numeric(wt[sort(names(wt))])
     }
   }
 

@@ -17,7 +17,8 @@ gcap.dotplot(
 
 \item{by}{the level of focal amplicons.}
 
-\item{filter}{a filter expression based on \code{cn} (CN mean) and \code{N} (frequency).}
+\item{filter}{a filter expression based on \code{cn} (CN mean) and \code{N} (frequency)
+to add text labels.}
 
 \item{include}{amplicon type to include for plotting.}
 

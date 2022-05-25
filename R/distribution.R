@@ -3,6 +3,7 @@
 #' @param fCNA a `fCNA` object or a `data.frame` with at least
 #' 3 columns "sample", "class" and "by".
 #' @param x a column name in `fCNA$sample_summary`.
+#' @param merge_circular if `TRUE`, merge 'possibly_circular' into 'circular'.
 #' @param x_size font size of x axis text.
 #' @param fill if `TRUE`, show the percentage instead of count.
 #' @param palette color palette.

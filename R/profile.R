@@ -21,6 +21,7 @@
 #' @seealso [gcap::fCNA] for building object.
 #'
 #' @examples
+#' \donttest{
 #' library(gcap)
 #' if (require("ComplexHeatmap") && require("IDConverter")) {
 #'   data("ascn")
@@ -38,7 +39,7 @@
 #'   data2 <- rv$getGeneSummary(return_mat = TRUE)
 #'   ht <- gcap.plotProfile(data2,
 #'     samples = c("B", "A", "C", "D", "F"),
-#'     genes = unique(rv$data$gene_id)[1:10],
+#'     genes = rownames(data2)[1:10],
 #'     top_annotation = ComplexHeatmap::HeatmapAnnotation(
 #'       cbar = ComplexHeatmap::anno_oncoprint_barplot(),
 #'       foo1 = c("g1", "g1", "g2", "g2", "g3"),
@@ -51,8 +52,9 @@
 #'   data2 <- rv$getCytobandSummary(return_mat = TRUE)
 #'   gcap.plotProfile(data2)
 #' }
+#' }
 #' @testexamples
-#' expect_is(ht, "Heatmap")
+#' expect_type(ht, "S4")
 gcap.plotProfile <- function(data,
                              genes = NULL,
                              samples = NULL,
@@ -91,6 +93,11 @@ gcap.plotProfile <- function(data,
     circular = ComplexHeatmap::alter_graphic("rect", fill = col["circular"]),
     noncircular = ComplexHeatmap::alter_graphic("rect", fill = col["noncircular"])
   )
+
+  data2 <- as.data.frame(lapply(data, factor_to_chrs))
+  data2[is.na(data2)] <- ""
+  rownames(data2) <- rownames(data)
+  data <- data2
 
   ht <- ComplexHeatmap::oncoPrint(data,
     alter_fun = alter_fun, col = col,

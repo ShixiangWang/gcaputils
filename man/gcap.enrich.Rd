@@ -41,6 +41,7 @@ depends on \code{data} and \code{analysis_func}.
 Enrichment Analysis
 }
 \examples{
+\donttest{
 if (require("clusterProfiler")) {
   gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"), gene_encode = "symbol")
 }
@@ -49,5 +50,6 @@ if (require("fgsea")) {
   gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"),
     gene_encode = "symbol", analysis_func = "fgsea"
   )
+}
 }
 }

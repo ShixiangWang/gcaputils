@@ -2,7 +2,7 @@
 % Please edit documentation in R/circos.R
 \name{gcap.plotCircos}
 \alias{gcap.plotCircos}
-\title{Plot Circos for GCAP object}
+\title{Plot Circos}
 \usage{
 gcap.plotCircos(
   fCNA,
@@ -15,6 +15,9 @@ gcap.plotCircos(
 )
 }
 \arguments{
+\item{fCNA}{a \code{fCNA} object or a \code{data.frame} with at least
+3 columns "sample", "class" and "by".}
+
 \item{highlight_genes}{gene list to highlight.}
 
 \item{clust_distance}{a distance as cutoff for different clusters.
@@ -33,5 +36,5 @@ chromosomes, so please don't set value larger than that.}
 Nothing.
 }
 \description{
-Plot Circos for GCAP object
+Plot Circos
 }

@@ -32,7 +32,7 @@ test_that("Function gcap.plotKMcurve() @ L61", {
     p2
   }
   
-  expect_is(p, "ggplot2")
-  expect_is(p2, "ggplot2")
+  expect_s3_class(p, "ggsurvplot")
+  expect_s3_class(p2, "ggsurvplot")
 })
 

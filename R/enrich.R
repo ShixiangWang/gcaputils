@@ -25,6 +25,7 @@
 #' @return depends on `data` and `analysis_func`.
 #' @export
 #' @examples
+#' \donttest{
 #' if (require("clusterProfiler")) {
 #'   gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"), gene_encode = "symbol")
 #' }
@@ -33,6 +34,7 @@
 #'   gcap.enrich(c("TP53", "MYC", "ABC", "EGFR", "GSX2"),
 #'     gene_encode = "symbol", analysis_func = "fgsea"
 #'   )
+#' }
 #' }
 gcap.enrich <- function(geneList,
                         analysis_func = c("enricher", "fgsea"),
@@ -49,8 +51,13 @@ gcap.enrich <- function(geneList,
   gene_encode <- match.arg(gene_encode)
   genome_build <- match.arg(genome_build)
 
-  msigdbr_df <- msigdbr::msigdbr(species = species, category = category, subcategory = subcategory) %>%
-    data.table::as.data.table()
+  msigdbr_df <- data.table::as.data.table(
+    msigdbr::msigdbr(
+      species = species,
+      category = category,
+      subcategory = subcategory
+    )
+  )
 
   if (gene_encode == "ensembl") {
     cols <- c("gs_name", "ensembl_gene")

@@ -8,6 +8,6 @@ test_that("Function gcap.extractComponents() @ L31", {
   x <- c(rnorm(10, 0), rnorm(50, 1), rnorm(20, 4), rnorm(5, 10))
   y <- gcap.extractComponents(x, max_comp = 5)
   y
-  expect_equal(nrow(y$params), 3)
+  expect_equal(length(y), 2)
 })
 

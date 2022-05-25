@@ -87,3 +87,16 @@ set_default_factor <- function(class, ref_level = "nofocal") {
   )
   factor(class, levels = c(ref_level, setdiff(c("nofocal", "noncircular", "circular"), ref_level)))
 }
+
+factor_to_chrs <- function(x) {
+  if (inherits(x, "factor")) as.character(x) else x
+}
+
+utils::globalVariables(
+  c(
+    "chr", "start", "end", ".", "x", "y",
+    "cn", "N", "total_cn", "amplicon_type",
+    "gene_id", "circular", "noncircular",
+    "time", "status"
+  )
+)

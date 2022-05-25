@@ -2,7 +2,8 @@
 
 # File R/profile.R: @testexamples
 
-test_that("Function gcap.plotProfile() @ L56", {
+test_that("Function gcap.plotProfile() @ L58", {
+  
   
   library(gcap)
   if (require("ComplexHeatmap") && require("IDConverter")) {
@@ -21,7 +22,7 @@ test_that("Function gcap.plotProfile() @ L56", {
     data2 <- rv$getGeneSummary(return_mat = TRUE)
     ht <- gcap.plotProfile(data2,
       samples = c("B", "A", "C", "D", "F"),
-      genes = unique(rv$data$gene_id)[1:10],
+      genes = rownames(data2)[1:10],
       top_annotation = ComplexHeatmap::HeatmapAnnotation(
         cbar = ComplexHeatmap::anno_oncoprint_barplot(),
         foo1 = c("g1", "g1", "g2", "g2", "g3"),
@@ -34,6 +35,7 @@ test_that("Function gcap.plotProfile() @ L56", {
     data2 <- rv$getCytobandSummary(return_mat = TRUE)
     gcap.plotProfile(data2)
   }
-  expect_is(ht, "Heatmap")
+  
+  expect_type(ht, "S4")
 })
 

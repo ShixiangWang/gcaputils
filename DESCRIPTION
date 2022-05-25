@@ -12,20 +12,24 @@ BugReports: https://github.com/ShixiangWang/gcaputils/issues
 Depends: 
     R (>= 3.5)
 Imports: 
+    BiocManager,
     data.table,
+    flexmix,
     gcap (>= 0.20.1),
     ggplot2,
     IDConverter (>= 0.3.0),
+    methods,
+    plyr,
     Rcpp,
     scales,
-    survival,
-    plyr
+    survival
 Suggests:
     circlize,
     clusterProfiler,
     ComplexHeatmap (>= 2.5.2),
+    cowplot,
     fgsea,
-    flexmix,
+    ggrepel,
     msigdbr,
     survminer,
     testthat (>= 3.0.0)
