@@ -1,7 +1,7 @@
 #' Plot Circos
 #'
-#' @inheritParams gcap.plotDistribution
-#' @param highlights gene list to highlight.
+#' @inheritParams gcap.dotplot
+#' @param highlights gene/cytoband list to highlight.
 #' @param clust_distance a distance as cutoff for different clusters.
 #' Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
 #' chromosomes, so please don't set value larger than that.
@@ -12,13 +12,45 @@
 #'
 #' @return Nothing.
 #' @export
+#' @examples
+#' \donttest{
+#' library(gcap)
+#' if (require("circlize") && require("scales")) {
+#'   data("ascn")
+#'   data <- ascn
+#'
+#'   # Create fake data
+#'   set.seed(1234)
+#'   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+#'   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+#'
+#'   gcap.plotCircos(rv)
+#'
+#'   # Select genes to highlight in plot
+#'   r1 <- rv$getGeneSummary(return_record = TRUE)
+#'   gcap.plotCircos(rv, r1[amplicon_type == "circular"]$gene_id[1:10])
+#'
+#'   gcap.plotCircos(rv, r1[, .(label = .N), by = .(band)][1:10])
+#'   gcap.plotCircos(
+#'     rv,
+#'     r1[, .(label = .N, cluster = gsub("(.*):.*", "\\1", band)),
+#'       by = .(band)
+#'     ][1:10]
+#'   )
+#' }
+#' }
+#' @testexamples
+#' expect_equal(5, 5)
 gcap.plotCircos <- function(fCNA,
                             highlights = NULL,
                             clust_distance = 1e7,
                             col = c("#FF000080", "#0000FF80"),
                             genome_build = c("hg38", "hg19"),
                             chrs = paste0("chr", 1:22),
-                            ideogram_height = 1, ...) {
+                            ideogram_height = 1,
+                            prob_cutoff = 0.5,
+                            gap_cn = 4L,
+                            ...) {
   .check_install("circlize")
   .check_install("scales")
   genome_build <- match.arg(genome_build)
@@ -26,7 +58,7 @@ gcap.plotCircos <- function(fCNA,
     system.file("extdata", package = "gcap"),
     paste0(genome_build, "_target_genes.rds")
   ))
-  data = fCNA$getGeneSummary(return_record = TRUE, ...)
+  data <- fCNA$getGeneSummary(prob_cutoff, gap_cn, return_record = TRUE)
   if (!startsWith(data$gene_id[1], "ENSG")) {
     message("detected you have transformed ENSEMBL ID, also transforming gene annotation data")
     opts <- getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
@@ -35,11 +67,10 @@ gcap.plotCircos <- function(fCNA,
     target_genes <- target_genes[!is.na(target_genes$gene_id), ]
   }
   data_bed <- merge(data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
-  data_bed$amplicon_type <- ifelse(data_bed$amplicon_type %in% c("circular", "possibly_circular"), "circular", "noncircular")
   data_bed <- data_bed[!is.na(data_bed$gene_id) & data_bed$chrom %in% chrs,
     c(
-      "chrom", "start", "end", "total_cn", "gene_id",
-      "amplicon_type"
+      "chrom", "start", "end", "total_cn",
+      "gene_id", "amplicon_type"
     ),
     with = FALSE
   ]
@@ -92,47 +123,81 @@ gcap.plotCircos <- function(fCNA,
     # )
     if (is.data.frame(highlights)) {
       message("found input a data.frame for highlighting")
-      stopifnot("gene_id" %in% colnames(highlights))
-      data <- data.table::as.data.table(highlights)
-      highlights <- data$gene_id
+      if ("gene_id" %in% colnames(highlights)) {
+        data <- data.table::as.data.table(highlights)
+        highlights <- data$gene_id
+      } else if ("band" %in% colnames(highlights)) {
+        data <- data.table::as.data.table(highlights)
+        highlights <- data$band
+      } else {
+        stop("when input a data.frame, 'gene_id' or 'band' column must exist")
+      }
     } else {
       data <- data.table::data.table()
     }
 
-    bed <- unique(data_bed[
-      data_bed$gene_id %in% highlights,
-      c("chr", "start", "end", "gene_id")
-    ])
-    if (ncol(data) > 0) {
-      bed <- merge(bed, data, by = "gene_id", all.x = TRUE, sort = FALSE)
-      data.table::setcolorder(bed, c("chr", "start", "end", "gene_id"))
-    }
+    if (!"band" %in% colnames(data)) {
+      bed <- unique(data_bed[
+        data_bed$gene_id %in% highlights,
+        c("chr", "start", "end", "gene_id")
+      ])
+      if (ncol(data) > 0) {
+        bed <- merge(bed, data, by = "gene_id", all.x = TRUE, sort = FALSE)
+        data.table::setcolorder(bed, c("chr", "start", "end", "gene_id"))
+      }
 
-    if (nrow(bed) < 1) {
-      message("no data for your selected genes, please check")
-      return(invisible(NULL))
-    }
+      if (nrow(bed) < 1) {
+        message("no data for your selected genes, please check")
+        return(invisible(NULL))
+      }
 
-    if (is.null(clust_distance) & ncol(data) == 0) {
-      bed_col <- as.numeric(factor(bed$gene_id))
-    } else if ("cluster" %in% colnames(bed)) {
-      message("found 'cluster' column, use it for color mapping")
-      bed_col <- as.numeric(factor(bed$cluster))
+      if (is.null(clust_distance) & ncol(data) == 0) {
+        bed_col <- as.numeric(factor(bed$gene_id))
+      } else if ("cluster" %in% colnames(bed)) {
+        message("found 'cluster' column, use it for color mapping")
+        bed_col <- as.numeric(factor(bed$cluster))
+      } else {
+        message("clustering highlight genes by 'hclust' average method with distance data from gene centers")
+        message("distance cutoff: ", clust_distance)
+        bed_col <- clusterGPosition(bed, clust_distance)
+        message("done")
+      }
+
+      if ("label" %in% colnames(bed)) {
+        message("label detected, add it to gene id")
+        bed$gene_id <- paste0(bed$gene_id, " (", bed$label, ")")
+      }
+
+      data.table::setnames(bed, "gene_id", "id")
     } else {
-      message("clustering highlight genes by 'hclust' average method with distance data from gene centers")
-      message("distance cutoff: ", clust_distance)
-      bed_col <- clusterGPosition(bed, clust_distance)
-      message("done")
-    }
+      .check_install("sigminer")
+      cytobands <- sigminer::get_genome_annotation("cytobands", genome_build = genome_build)
+      data.table::setDT(cytobands)
+      colnames(cytobands)[1] <- "chr"
+      cytobands$stain <- NULL
+      cytobands[, band := paste(chr, band, sep = ":")]
 
-    if ("label" %in% colnames(bed)) {
-      message("label detected, add it to gene id")
-      bed$gene_id <- paste0(bed$gene_id, " (", bed$label, ")")
+      bed <- merge(data, cytobands, by = "band", sort = FALSE)
+      data.table::setcolorder(bed, c("chr", "start", "end", "band"))
+
+      if ("cluster" %in% colnames(bed)) {
+        message("found 'cluster' column, use it for color mapping")
+        bed_col <- as.numeric(factor(bed$cluster))
+      } else {
+        bed_col <- as.numeric(factor(bed$band))
+      }
+
+      if ("label" %in% colnames(bed)) {
+        message("label detected, add it to band id")
+        bed$band <- paste0(bed$band, " (", bed$label, ")")
+      }
+
+      data.table::setnames(bed, "band", "id")
     }
 
     ssize <- max(nchar(highlights)) / 8
     circlize::circos.genomicLabels(bed,
-      labels = bed$gene_id, side = "outside",
+      labels = bed$id, side = "outside",
       cex = 0.5 / (ssize),
       connection_height = circlize::mm_h(5 / ssize),
       col = bed_col,

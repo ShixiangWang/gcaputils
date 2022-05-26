@@ -6,21 +6,28 @@
 \usage{
 gcap.dotplot(
   fCNA,
+  filter,
   by = c("gene_id", "band", "chr"),
-  filter = cn > 50 | (N > 1 & cn > 20),
+  unique = FALSE,
   include = c("circular", "possibly_circular"),
+  prob_cutoff = 0.5,
+  gap_cn = 4L,
   ...
 )
 }
 \arguments{
-\item{fCNA}{a \link{fCNA} object.}
-
-\item{by}{the level of focal amplicons.}
+\item{fCNA}{a \href{gcap::fCNA}{fCNA} object.}
 
 \item{filter}{a filter expression based on \code{cn} (CN mean) and \code{N} (frequency)
 to add text labels.}
 
+\item{by}{the level of focal amplicons.}
+
+\item{unique}{if \code{TRUE}, count samples instead of genes.}
+
 \item{include}{amplicon type to include for plotting.}
+
+\item{prob_cutoff, gap_cn}{thresholds for classify 'circular' and 'noncircular'.}
 
 \item{...}{other parameters passing to \code{ggrepel::geom_label_repel()}.}
 }
@@ -29,4 +36,27 @@ a ggplot.
 }
 \description{
 Plot CN Mean vs. Frequency Dotplot
+}
+\examples{
+\donttest{
+library(gcap)
+if (require("ggrepel") && require("cowplot")) {
+  data("ascn")
+  data <- ascn
+
+  # Create fake data
+  set.seed(1234)
+  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+
+  p <- gcap.dotplot(rv, filter = cn > 60)
+  p
+  p2 <- gcap.dotplot(rv, filter = cn > 60 | N > 15, by = "band")
+  p2
+  p3 <- gcap.dotplot(rv, filter = cn > 60 | N > 50, by = "chr")
+  p3
+  p4 <- gcap.dotplot(rv, filter = cn > 60 | N > 3, by = "band", unique = TRUE)
+  p4
+}
+}
 }

@@ -97,6 +97,6 @@ utils::globalVariables(
     "chr", "start", "end", ".", "x", "y",
     "cn", "N", "total_cn", "amplicon_type",
     "gene_id", "circular", "noncircular",
-    "time", "status"
+    "time", "status", "band"
   )
 )

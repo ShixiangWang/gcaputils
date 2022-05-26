@@ -90,8 +90,8 @@ gcap.plotKMcurve <- function(fCNA,
       stop("When you want to specify the genes/cytobands, please input gene/cytoband-by-sample matrix to 'mat'")
     }
     # Extract class based on gene/cytoband
-    all_samples <- fCNA$sample_summary$sample
-    # AMP samples
+
+    # labels for AMP samples
     if (focus == "fCNA") {
       types <- c("noncircular", "possibly_circular", "circular")
       labels <- c("fCNA-", "fCNA+")

@@ -12,14 +12,15 @@ gcap.plotCircos(
   genome_build = c("hg38", "hg19"),
   chrs = paste0("chr", 1:22),
   ideogram_height = 1,
+  prob_cutoff = 0.5,
+  gap_cn = 4L,
   ...
 )
 }
 \arguments{
-\item{fCNA}{a \code{fCNA} object or a \code{data.frame} with at least
-3 columns "sample", "class" and "by".}
+\item{fCNA}{a \href{gcap::fCNA}{fCNA} object.}
 
-\item{highlights}{gene list to highlight.}
+\item{highlights}{gene/cytoband list to highlight.}
 
 \item{clust_distance}{a distance as cutoff for different clusters.
 Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
@@ -33,11 +34,43 @@ chromosomes, so please don't set value larger than that.}
 
 \item{ideogram_height}{ideogram height at default.}
 
-\item{...}{other parameters passing to \code{ggplot2::geom_bar}.}
+\item{prob_cutoff}{thresholds for classify 'circular' and 'noncircular'.}
+
+\item{gap_cn}{thresholds for classify 'circular' and 'noncircular'.}
+
+\item{...}{other parameters passing to \code{ggrepel::geom_label_repel()}.}
 }
 \value{
 Nothing.
 }
 \description{
 Plot Circos
+}
+\examples{
+\donttest{
+library(gcap)
+if (require("circlize") && require("scales")) {
+  data("ascn")
+  data <- ascn
+
+  # Create fake data
+  set.seed(1234)
+  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+
+  gcap.plotCircos(rv)
+
+  # Select genes to highlight in plot
+  r1 <- rv$getGeneSummary(return_record = TRUE)
+  gcap.plotCircos(rv, r1[amplicon_type == "circular"]$gene_id[1:10])
+
+  gcap.plotCircos(rv, r1[, .(label = .N), by = .(band)][1:10])
+  gcap.plotCircos(
+    rv,
+    r1[, .(label = .N, cluster = gsub("(.*):.*", "\\\\1", band)),
+      by = .(band)
+    ][1:10]
+  )
+}
+}
 }
