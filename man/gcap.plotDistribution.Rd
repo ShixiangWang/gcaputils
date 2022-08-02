@@ -8,7 +8,8 @@ gcap.plotDistribution(
   fCNA,
   x = NULL,
   x_size = 8,
-  merge_circular = TRUE,
+  set_order = TRUE,
+  set_label = TRUE,
   fill = TRUE,
   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
   ...
@@ -22,7 +23,9 @@ gcap.plotDistribution(
 
 \item{x_size}{font size of x axis text.}
 
-\item{merge_circular}{if \code{TRUE}, merge 'possibly_circular' into 'circular'.}
+\item{set_order}{set order for \code{by}.}
+
+\item{set_label}{set labels to add sample count for \code{by}.}
 
 \item{fill}{if \code{TRUE}, show the percentage instead of count.}
 

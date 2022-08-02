@@ -38,7 +38,7 @@ as one class.}
 
 \item{focus}{focal amplication type you focus on.
 Can be 'fCNA' or 'circular'. If 'fCNA' selected,
-noncircular and circular ID are included to classify samples.}
+noncircular and circular genes/cytobands are included to classify samples.}
 
 \item{palette}{plot color palette.}
 
