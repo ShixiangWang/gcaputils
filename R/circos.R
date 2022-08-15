@@ -27,13 +27,13 @@
 #'   gcap.plotCircos(rv)
 #'
 #'   # Select genes to highlight in plot
-#'   r1 <- rv$getGeneSummary(return_record = TRUE)
-#'   gcap.plotCircos(rv, r1[amplicon_type == "circular"]$gene_id[1:10])
+#'   r1 <- rv$getGeneSummary()
+#'   gcap.plotCircos(rv, r1[circular == 1]$gene_id[1:10])
 #'
-#'   gcap.plotCircos(rv, r1[, .(label = .N), by = .(band)][1:10])
+#'   gcap.plotCircos(rv, rv$data[, .(label = .N), by = .(band)][1:10])
 #'   gcap.plotCircos(
 #'     rv,
-#'     r1[, .(label = .N, cluster = gsub("(.*):.*", "\\1", band)),
+#'     rv$data[, .(label = .N, cluster = gsub("(.*):.*", "\\1", band)),
 #'       by = .(band)
 #'     ][1:10]
 #'   )
@@ -43,13 +43,12 @@
 #' expect_equal(5, 5)
 gcap.plotCircos <- function(fCNA,
                             highlights = NULL,
+                            total_n = NULL,
                             clust_distance = 1e7,
                             col = c("#FF000080", "#0000FF80"),
                             genome_build = c("hg38", "hg19"),
                             chrs = paste0("chr", 1:22),
                             ideogram_height = 1,
-                            prob_cutoff = 0.5,
-                            gap_cn = 4L,
                             ...) {
   .check_install("circlize")
   .check_install("scales")
@@ -58,7 +57,7 @@ gcap.plotCircos <- function(fCNA,
     system.file("extdata", package = "gcap"),
     paste0(genome_build, "_target_genes.rds")
   ))
-  data <- fCNA$getGeneSummary(prob_cutoff, gap_cn, return_record = TRUE)
+  data <- fCNA$getGeneSummary()
   if (!startsWith(data$gene_id[1], "ENSG")) {
     message("detected you have transformed ENSEMBL ID, also transforming gene annotation data")
     opts <- getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
@@ -67,9 +66,10 @@ gcap.plotCircos <- function(fCNA,
     target_genes <- target_genes[!is.na(target_genes$gene_id), ]
   }
   data_bed <- merge(data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
+  data_bed[, amplicon_type := ifelse(circular > 0, "circular", "noncircular")]
   data_bed <- data_bed[!is.na(data_bed$gene_id) & data_bed$chrom %in% chrs,
     c(
-      "chrom", "start", "end", "total_cn",
+      "chrom", "start", "end",
       "gene_id", "amplicon_type"
     ),
     with = FALSE
@@ -80,28 +80,24 @@ gcap.plotCircos <- function(fCNA,
     return(invisible(NULL))
   }
 
-  cnrange <- range(data_bed$total_cn, na.rm = TRUE)
   bed_list <- split(data_bed, data_bed$amplicon_type)
   bed_list <- lapply(bed_list, function(x) {
-    x[, .(freq = .N), by = .(chr, start, end, gene_id)]
+    if (!is.null(total_n)) {
+      message("calculate percentage")
+      x[, .(freq = .N / total_n), by = .(chr, start, end, gene_id)]
+    } else {
+      x[, .(freq = .N), by = .(chr, start, end, gene_id)]
+    }
   })
-  bed_cn <- data.table::dcast(data_bed[, .(total_cn = mean(total_cn, na.rm = T)),
-    by = .(chr, start, end, gene_id, amplicon_type)
-  ],
-  chr + start + end + gene_id ~ amplicon_type,
-  value.var = "total_cn"
-  )
-  bed_cn[, circular := ifelse(is.na(circular), 0, circular)]
-  bed_cn[, noncircular := ifelse(is.na(noncircular), 0, -noncircular)]
 
   gap_after <- c(rep(1, length(chrs) - 1), 12)
   circlize::circos.par(
     "start.degree" = 90,
-    "track.height" = 0.15, # % of the circle radius
+    "track.height" = 0.25, # % of the circle radius
     "gap.after" = gap_after
   )
 
-  track_height <- 0.1
+  track_height <- 0.15
   circlize::circos.initializeWithIdeogram(
     species = genome_build,
     chromosome.index = chrs,
@@ -219,8 +215,8 @@ gcap.plotCircos <- function(fCNA,
   draw_track_y_axis(chrs)
   draw_freq_track(bed_list$noncircular, col[2])
   draw_track_y_axis(chrs)
-  draw_bi_track(bed_cn, col)
-  draw_track_y_axis(chrs, at = scales::breaks_pretty(5)(c(0, cnrange[2])))
+  # draw_bi_track(bed_cn, col)
+  # draw_track_y_axis(chrs, at = scales::breaks_pretty(5)(c(0, cnrange[2])))
 }
 
 draw_track_y_axis <- function(chrs, at = NULL) {
