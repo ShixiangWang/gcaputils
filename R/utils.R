@@ -71,7 +71,7 @@ clusterGPosition <- function(dt, distance = 1e7,
 
 # refine_class = function(fcna, min_n = 2) {
 #   v1 = unique(fcna$data[, list(sample, band, gene_class)])[
-#     , list(class = ifelse(sum(gene_class == "circular") > min_n, 
+#     , list(class = ifelse(sum(gene_class == "circular") > min_n,
 #                           "circular", "noncircular")), by = list(sample)]
 #   v2 = fcna$sample_summary[, -"class"]
 #   rv = merge(v2, v1, by = "sample", all.x = TRUE)

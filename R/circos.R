@@ -2,6 +2,8 @@
 #'
 #' @inheritParams gcap.dotplot
 #' @param highlights gene/cytoband list to highlight.
+#' @param total_n if not `NULL`, this is used for calculating percentage.
+#' @param only if not `NA`, only shows a type of amplicon.
 #' @param clust_distance a distance as cutoff for different clusters.
 #' Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
 #' chromosomes, so please don't set value larger than that.
@@ -49,10 +51,12 @@ gcap.plotCircos <- function(fCNA,
                             genome_build = c("hg38", "hg19"),
                             chrs = paste0("chr", 1:22),
                             ideogram_height = 1,
+                            only = c(NA_character_, "circular", "noncircular"),
                             ...) {
   .check_install("circlize")
   .check_install("scales")
   genome_build <- match.arg(genome_build)
+  only <- match.arg(only)
   target_genes <- readRDS(file.path(
     system.file("extdata", package = "gcap"),
     paste0(genome_build, "_target_genes.rds")
@@ -93,7 +97,7 @@ gcap.plotCircos <- function(fCNA,
   gap_after <- c(rep(1, length(chrs) - 1), 12)
   circlize::circos.par(
     "start.degree" = 90,
-    "track.height" = 0.25, # % of the circle radius
+    "track.height" = if (!is.na(only)) 0.5 else 0.25, # % of the circle radius
     "gap.after" = gap_after
   )
 
@@ -211,10 +215,19 @@ gcap.plotCircos <- function(fCNA,
     )
   }
 
-  draw_freq_track(bed_list$circular, col[1])
-  draw_track_y_axis(chrs)
-  draw_freq_track(bed_list$noncircular, col[2])
-  draw_track_y_axis(chrs)
+  if (is.na(only)) {
+    draw_freq_track(bed_list$circular, col[1])
+    draw_track_y_axis(chrs)
+    draw_freq_track(bed_list$noncircular, col[2])
+    draw_track_y_axis(chrs)
+  } else if (only == "circular") {
+    draw_freq_track(bed_list$circular, col[1])
+    draw_track_y_axis(chrs)
+  } else {
+    draw_freq_track(bed_list$noncircular, col[1])
+    draw_track_y_axis(chrs)
+  }
+
   # draw_bi_track(bed_cn, col)
   # draw_track_y_axis(chrs, at = scales::breaks_pretty(5)(c(0, cnrange[2])))
 }

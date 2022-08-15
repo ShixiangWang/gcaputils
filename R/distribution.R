@@ -46,12 +46,12 @@ gcap.plotDistribution <- function(fCNA,
   dt_n <- data[, .N, by = list(by, class)]
 
   if (set_label) {
-    dt_s = dt_n[, list(N = sum(N, na.rm =  TRUE)), by = list(by)]
-    dt_s$label = paste0(dt_s$by, " (N=", dt_s$N, ")")
-    labels = dt_s$label
-    names(labels) = dt_s$by
+    dt_s <- dt_n[, list(N = sum(N, na.rm = TRUE)), by = list(by)]
+    dt_s$label <- paste0(dt_s$by, " (N=", dt_s$N, ")")
+    labels <- dt_s$label
+    names(labels) <- dt_s$by
   } else {
-    labels = NULL
+    labels <- NULL
   }
 
   if (fill) {
@@ -59,8 +59,8 @@ gcap.plotDistribution <- function(fCNA,
   }
 
   if (set_order) {
-    by_order = dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], 0)), by = list(by)]
-    by_order = by_order[order(-N)]$by
+    by_order <- dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], 0)), by = list(by)]
+    by_order <- by_order[order(-N)]$by
     dt_n[, by := factor(by, levels = by_order)]
   }
 

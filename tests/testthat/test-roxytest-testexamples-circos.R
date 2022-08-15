@@ -2,7 +2,7 @@
 
 context("File R/circos.R: @testexamples")
 
-test_that("Function gcap.plotCircos() @ L44", {
+test_that("Function gcap.plotCircos() @ L46", {
   
   
   library(gcap)
@@ -18,13 +18,13 @@ test_that("Function gcap.plotCircos() @ L44", {
     gcap.plotCircos(rv)
   
     # Select genes to highlight in plot
-    r1 <- rv$getGeneSummary(return_record = TRUE)
-    gcap.plotCircos(rv, r1[amplicon_type == "circular"]$gene_id[1:10])
+    r1 <- rv$getGeneSummary()
+    gcap.plotCircos(rv, r1[circular == 1]$gene_id[1:10])
   
-    gcap.plotCircos(rv, r1[, .(label = .N), by = .(band)][1:10])
+    gcap.plotCircos(rv, rv$data[, .(label = .N), by = .(band)][1:10])
     gcap.plotCircos(
       rv,
-      r1[, .(label = .N, cluster = gsub("(.*):.*", "\\1", band)),
+      rv$data[, .(label = .N, cluster = gsub("(.*):.*", "\\1", band)),
         by = .(band)
       ][1:10]
     )

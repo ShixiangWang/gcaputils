@@ -7,13 +7,13 @@
 gcap.plotCircos(
   fCNA,
   highlights = NULL,
+  total_n = NULL,
   clust_distance = 1e+07,
   col = c("#FF000080", "#0000FF80"),
   genome_build = c("hg38", "hg19"),
   chrs = paste0("chr", 1:22),
   ideogram_height = 1,
-  prob_cutoff = 0.5,
-  gap_cn = 4L,
+  only = c(NA_character_, "circular", "noncircular"),
   ...
 )
 }
@@ -21,6 +21,8 @@ gcap.plotCircos(
 \item{fCNA}{a \href{gcap::fCNA}{fCNA} object.}
 
 \item{highlights}{gene/cytoband list to highlight.}
+
+\item{total_n}{if not \code{NULL}, this is used for calculating percentage.}
 
 \item{clust_distance}{a distance as cutoff for different clusters.
 Default is 1e7, i.e. 10Mb. Note 100 Mb is set to genes on different
@@ -34,9 +36,7 @@ chromosomes, so please don't set value larger than that.}
 
 \item{ideogram_height}{ideogram height at default.}
 
-\item{prob_cutoff}{thresholds for classify 'circular' and 'noncircular'.}
-
-\item{gap_cn}{thresholds for classify 'circular' and 'noncircular'.}
+\item{only}{if not \code{NA}, only shows a type of amplicon.}
 
 \item{...}{other parameters passing to \code{ggrepel::geom_label_repel()}.}
 }
@@ -61,13 +61,13 @@ if (require("circlize") && require("scales")) {
   gcap.plotCircos(rv)
 
   # Select genes to highlight in plot
-  r1 <- rv$getGeneSummary(return_record = TRUE)
-  gcap.plotCircos(rv, r1[amplicon_type == "circular"]$gene_id[1:10])
+  r1 <- rv$getGeneSummary()
+  gcap.plotCircos(rv, r1[circular == 1]$gene_id[1:10])
 
-  gcap.plotCircos(rv, r1[, .(label = .N), by = .(band)][1:10])
+  gcap.plotCircos(rv, rv$data[, .(label = .N), by = .(band)][1:10])
   gcap.plotCircos(
     rv,
-    r1[, .(label = .N, cluster = gsub("(.*):.*", "\\\\1", band)),
+    rv$data[, .(label = .N, cluster = gsub("(.*):.*", "\\\\1", band)),
       by = .(band)
     ][1:10]
   )

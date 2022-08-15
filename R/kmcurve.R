@@ -79,15 +79,15 @@ gcap.plotKMcurve <- function(fCNA,
 
   if (!is.data.frame(fCNA)) {
     if (is.character(surv_data)) {
-    surv_data <- fCNA$sample_summary[, c("sample", surv_data), with = FALSE]
-  }
-  colnames(surv_data)[2:3] <- c("time", "status")
+      surv_data <- fCNA$sample_summary[, c("sample", surv_data), with = FALSE]
+    }
+    colnames(surv_data)[2:3] <- c("time", "status")
   }
 
   if (is.null(ID)) {
     if (is.data.frame(fCNA)) {
-      data = data.table::as.data.table(fCNA)
-      colnames(data) = c("sample", "class", "time", "status")
+      data <- data.table::as.data.table(fCNA)
+      colnames(data) <- c("sample", "class", "time", "status")
     } else {
       data <- fCNA$sample_summary[, c("sample", class_col), with = FALSE]
       colnames(data)[2] <- "class"
@@ -129,9 +129,9 @@ gcap.plotKMcurve <- function(fCNA,
 
   if (!is.data.frame(fCNA)) {
     data <- merge(data, data.table::as.data.table(surv_data),
-    by = "sample",
-    all.x = TRUE
-  )
+      by = "sample",
+      all.x = TRUE
+    )
   }
 
   if (!is.null(ending_time)) {
