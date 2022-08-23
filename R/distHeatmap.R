@@ -36,14 +36,15 @@
 #' }
 #' }
 gcap.plotGenomeHeatmap <- function(fCNA,
+                                   group = NULL,
                                    type = c(
                                      "prob", "circ_freq",
                                      "noncirc_freq", "circ_cn",
                                      "noncirc_cn"
                                    ),
-                                   group = NULL,
                                    highlights = NULL,
                                    total_n = NULL,
+                                   add_all = FALSE,
                                    draw = TRUE,
                                    bycol = TRUE,
                                    sort = FALSE,
@@ -98,9 +99,9 @@ gcap.plotGenomeHeatmap <- function(fCNA,
   }
 
   if (is.null(group)) group <- "sample"
-  if (!is.null(group) && group == "whole") {
-    dt_s$whole <- "whole"
-  }
+  # if (!is.null(group) && group == "whole") {
+  #   dt_s$whole <- "whole"
+  # }
   dt_s <- dt_s[, unique(c("sample", group)), with = FALSE]
   dt_n <- dt_s[, .N, by = list(group = dt_s[[group]])]
 
@@ -165,6 +166,31 @@ gcap.plotGenomeHeatmap <- function(fCNA,
   subgroup = factor(subgroup, subgroup)
   message("Order shall be ", paste0(subgroup, collapse = ","))
 
+  # Add barplot for all samples
+  if (add_all) {
+    dt_gene_circ <- dt2[
+      gene_class == "circular",
+      list(value = .N),
+      by = list(gene_id)]
+    dt_gene_noncirc <- dt2[
+      gene_class == "noncircular",
+      list(value = - .N),
+      by = list(gene_id)]
+    dt_all = rbind(dt_gene_circ, dt_gene_noncirc)
+
+
+    if (is.null(total_n)) {
+      dt_all[, value :=  value / nrow(dt_s)]
+    } else {
+      dt_all[, value := value / total_n]
+    }
+
+    dt_all = as.data.frame(merge(ref, dt_all, by = "gene_id")[
+      , list(chr, start, end, value)])
+    gr_all = GRanges(seqnames = dt_all[, 1], ranges = IRanges(dt_all[, 2], dt_all[, 3]))
+    v = average_in_window(chr_window, gr_all, dt_all[, 4])
+  }
+
   # visualize is a list of gene symbols that we want to mark in the plot.
   # gr3 contains genomic positions for the genes as well as their symbols.
   if (!is.null(highlights)) {
@@ -203,6 +229,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     }
   }
 
+  # Plot setting
   chr <- as.vector(seqnames(chr_window))
   chr <- factor(chr, levels = chrs)
 
@@ -226,6 +253,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     }
   }
 
+  # Plotting
   # ht_opt$TITLE_PADDING <- unit(c(4, 4), "points")
   if (bycol) {
     ht_list <- Heatmap(
@@ -242,6 +270,15 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       row_title_rot = 0, row_title_gp = gpar(fontsize = 8),
       border = TRUE, row_gap = unit(0, "points")
     )
+
+    if (add_all) {
+      ht_list = ht_list +
+        rowAnnotation(
+          `fCNA freq` = anno_barplot(
+            v[, 1],
+            gp = gpar(col = ifelse(v[ ,1] > 0, top_col, "blue"))),
+          width = unit(2, "cm"))
+    }
 
     if (!is.null(highlights)) {
       ht_list <- ht_list + rowAnnotation(
@@ -269,6 +306,14 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       border = TRUE, column_gap = unit(0, "points"),
       heatmap_legend_param = list(direction = "horizontal", title_position = "lefttop")
     )
+
+    if (add_all) {
+      ht_list = HeatmapAnnotation(
+        `fCNA freq` = anno_barplot(
+          v[, 1], gp = gpar(col = ifelse(v[ ,1] > 0, top_col, "blue"))),
+        annotation_name_side = "left", height = unit(2, "cm")) %v%
+        ht_list
+    }
 
     if (!is.null(highlights)) {
       ht_list <- HeatmapAnnotation(
