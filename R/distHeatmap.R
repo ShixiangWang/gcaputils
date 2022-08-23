@@ -49,6 +49,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
                                    sort = FALSE,
                                    w = 1e6,
                                    title = "auto",
+                                   title_rot = 90,
                                    top_col = "red",
                                    max_val = NULL,
                                    genome_build = c("hg38", "hg19"),
@@ -112,24 +113,24 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     dt_gene <- dt2[, list(value = mean(prob, na.rm = TRUE)), by = list(group, gene_id)]
   } else if (type == "circ_cn") {
     dt_gene <- dt2[gene_class == "circular",
-      list(value = mean(total_cn, na.rm = TRUE)),
-      by = list(group, gene_id)
+                   list(value = mean(total_cn, na.rm = TRUE)),
+                   by = list(group, gene_id)
     ]
   } else if (type == "noncirc_cn") {
     dt_gene <- dt2[gene_class == "noncircular",
-      list(value = mean(total_cn, na.rm = TRUE)),
-      by = list(group, gene_id)
+                   list(value = mean(total_cn, na.rm = TRUE)),
+                   by = list(group, gene_id)
     ]
   } else {
     if (type == "circ_freq") {
       dt_gene <- dt2[gene_class == "circular",
-        list(value = .N),
-        by = list(group, gene_id)
+                     list(value = .N),
+                     by = list(group, gene_id)
       ]
     } else {
       dt_gene <- dt2[gene_class == "noncircular",
-        list(value = .N),
-        by = list(group, gene_id)
+                     list(value = .N),
+                     by = list(group, gene_id)
       ]
     }
     if (is.null(total_n)) {
@@ -140,16 +141,15 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       dt_gene[, value := value / total_n]
     }
   }
-  subgroup <- unique(dt_gene$group)
   colnames(dt_gene) <- c("group", "gene_id", "value")
 
   dt_gene <- merge(ref, dt_gene, by = "gene_id")
   if (sort) {
-    dt_sort <- dt2[, list(N = length(unique(band[gene_class == "circular"]))), by = list(group)][order(N)]
+    dt_sort <- dt2[, list(N = length(unique(band[prob > 0.5]))),
+                   by = list(group)][order(N)]
     dt_gene[, group := factor(group, dt_sort$group)]
-    subgroup = dt_sort$group
   }
-  
+
   bed_list <- lapply(split(dt_gene, dt_gene$group), function(dt) {
     dt[, list(chr, start, end, value)]
   })
@@ -160,6 +160,10 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     gr_cnv <- GRanges(seqnames = bed[, 1], ranges = IRanges(bed[, 2], bed[, 3]))
     num_mat <- cbind(num_mat, average_in_window(chr_window, gr_cnv, bed[, 4]))
   }
+  subgroup = names(bed_list)
+  # colnames(num_mat) = subgroup # add this to check if order is right
+  subgroup = factor(subgroup, subgroup)
+  message("Order shall be ", paste0(subgroup, collapse = ","))
 
   # visualize is a list of gene symbols that we want to mark in the plot.
   # gr3 contains genomic positions for the genes as well as their symbols.
@@ -170,6 +174,11 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       bed3 <- as.data.frame(highlights)
     } else {
       if (is.character(highlights)) {
+        if (any(grepl(" ", highlights))) {
+          label = highlights
+          highlights = sub("(.*) (.*)", "\\1", highlights)
+          names(label) = highlights
+        }
         if (startsWith(highlights[1], "ENSG") || !startsWith(ref$gene_id[1], "ENSG")) {
           bed3 <- as.data.frame(ref[gene_id %in% highlights])
         } else {
@@ -180,7 +189,6 @@ gcap.plotGenomeHeatmap <- function(fCNA,
           bed3 <- as.data.frame(ref[gene_id %in% highlights])
         }
       } else {
-        s
         stop("unsupported input for 'highlights'")
       }
     }
@@ -190,6 +198,9 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     mtch <- as.matrix(findOverlaps(chr_window, gr3))
     at <- mtch[, 1]
     labels <- mcols(gr3)[mtch[, 2], 1]
+    if (exists("label")) {
+      labels = as.character(label[labels])
+    }
   }
 
   chr <- as.vector(seqnames(chr_window))
@@ -217,20 +228,19 @@ gcap.plotGenomeHeatmap <- function(fCNA,
 
   # ht_opt$TITLE_PADDING <- unit(c(4, 4), "points")
   if (bycol) {
-    ht_list <- Heatmap(num_mat,
-      name = title, col = colors,
+    ht_list <- Heatmap(
+      num_mat, name = title, col = colors,
       # heatmap_legend_param = list(color_bar = "discrete", at = c(0, 0.2, 0.4, 0.6, 0.8, 1)),
-      row_split = chr, cluster_rows = FALSE,
-      column_split = subgroup,
-      cluster_column_slices = FALSE, cluster_columns = FALSE,
+      row_split = chr, column_split = subgroup,
+      cluster_rows = FALSE, cluster_column_slices = FALSE, cluster_columns = FALSE,
       top_annotation = HeatmapAnnotation(
         group = subgroup,
         show_legend = FALSE,
         show_annotation_name = FALSE
       ),
-      column_title_rot = 90, column_title_gp = gpar(fontsize = 8),
-      row_title_rot = 0, row_title_gp = gpar(fontsize = 8), border = TRUE,
-      row_gap = unit(0, "points")
+      column_title_rot = title_rot, column_title_gp = gpar(fontsize = 8),
+      row_title_rot = 0, row_title_gp = gpar(fontsize = 8),
+      border = TRUE, row_gap = unit(0, "points")
     )
 
     if (!is.null(highlights)) {
@@ -243,28 +253,29 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     }
   } else {
     ht_list <- Heatmap(
-      t(num_mat),
-      name = title,
-      col = colors,
-      column_split = chr, cluster_columns = FALSE, show_row_dend = FALSE,
-      row_split = subgroup, cluster_row_slices = FALSE,
+      t(num_mat), name = title, col = colors,
+      column_split = chr, row_split = subgroup,
+      cluster_columns = FALSE, cluster_row_slices = FALSE, cluster_row = FALSE,
       left_annotation = rowAnnotation(
-        group = subgroup, show_annotation_name = FALSE,
-        annotation_legend_param = list(
-          group = list(direction = "horizontal", title_position = "lefttop", nrow = 1)
-        )
+        group = subgroup,
+        show_legend = FALSE,
+        show_annotation_name = FALSE
       ),
-      column_title_gp = gpar(fontsize = 10), border = TRUE,
-      column_gap = unit(0, "points"),
+      row_title_rot = title_rot - 90, row_title_gp = gpar(fontsize = 8),
+      column_title_gp = gpar(fontsize = 8),
       column_title = ifelse(seq_along(chrs) %% 2 == 0,
-        paste0("\n", chrs), paste0(chrs, "\n")
+                            paste0("\n", chrs), paste0(chrs, "\n")
       ),
+      border = TRUE, column_gap = unit(0, "points"),
       heatmap_legend_param = list(direction = "horizontal", title_position = "lefttop")
     )
 
     if (!is.null(highlights)) {
-      ht_list <-
-        HeatmapAnnotation(label = anno_mark(at = at, labels = labels, side = "top")) %v%
+      ht_list <- HeatmapAnnotation(
+        label = anno_mark(
+          at = at, labels = labels,
+          labels_gp = gpar(fontsize = 8),
+          side = "top")) %v%
         ht_list
     }
   }
