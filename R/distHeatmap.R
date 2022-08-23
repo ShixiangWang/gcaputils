@@ -199,8 +199,7 @@ gcap.plotGenomeHeatmap = function(fCNA,
                       column_split = subgroup, cluster_column_slices = FALSE,
                       top_annotation = HeatmapAnnotation(
                         group = subgroup, annotation_name_side = "left",
-                        show_annotation_name = FALSE,
-                        col = seq_along(subgroup)
+                        show_annotation_name = FALSE
                       ),
                       row_title_rot = 0, row_title_gp = gpar(fontsize = 10), border = TRUE,
                       row_gap = unit(0, "points")
