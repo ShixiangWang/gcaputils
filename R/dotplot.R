@@ -16,20 +16,20 @@
 #' library(gcap)
 #' if (require("ggrepel") && require("cowplot")) {
 #'   data("ascn")
-#'   data <- ascn
+#'   data = ascn
 #'
 #'   # Create fake data
 #'   set.seed(1234)
-#'   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
-#'   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+#'   data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
+#'   rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 #'
-#'   p <- gcap.dotplot(rv, filter = cn > 60)
+#'   p = gcap.dotplot(rv, filter = cn > 60)
 #'   p
-#'   p2 <- gcap.dotplot(rv, filter = cn > 60 | N > 15, by = "band")
+#'   p2 = gcap.dotplot(rv, filter = cn > 60 | N > 15, by = "band")
 #'   p2
-#'   p3 <- gcap.dotplot(rv, filter = cn > 60 | N > 50, by = "chr")
+#'   p3 = gcap.dotplot(rv, filter = cn > 60 | N > 50, by = "chr")
 #'   p3
-#'   p4 <- gcap.dotplot(rv, filter = cn > 60 | N > 3, by = "band", unique = TRUE)
+#'   p4 = gcap.dotplot(rv, filter = cn > 60 | N > 3, by = "band", unique = TRUE)
 #'   p4
 #' }
 #' }
@@ -38,7 +38,7 @@
 #' expect_is(p2, "ggplot")
 #' expect_is(p3, "ggplot")
 #' expect_is(p4, "ggplot")
-gcap.dotplot <- function(fCNA,
+gcap.dotplot = function(fCNA,
                          filter,
                          by = c("gene_id", "band", "chr"),
                          unique = FALSE,
@@ -50,17 +50,17 @@ gcap.dotplot <- function(fCNA,
   .check_install("cowplot")
   stopifnot(inherits(fCNA, "fCNA") | is.data.frame(fCNA))
   if (is.data.frame(fCNA)) {
-    data <- fCNA
+    data = fCNA
     stopifnot(all(c("amplicon_type", "gene_id" %in% colnames(data))))
   } else {
-    data <- fCNA$getGeneSummary(prob_cutoff, gap_cn, return_record = TRUE)
+    data = fCNA$getGeneSummary(prob_cutoff, gap_cn, return_record = TRUE)
   }
-  by <- match.arg(by)
+  by = match.arg(by)
   if (by == "chr") {
-    data$chr <- gsub("(.*):(.*)", "\\1", data$band)
+    data$chr = gsub("(.*):(.*)", "\\1", data$band)
   }
   if (!unique) {
-    genes_summary <- data[
+    genes_summary = data[
       , .(
         cn = mean(total_cn[amplicon_type %in% include], na.rm = TRUE),
         N = sum(amplicon_type %in% include, na.rm = TRUE)
@@ -68,7 +68,7 @@ gcap.dotplot <- function(fCNA,
       by = by
     ][N > 0]
   } else {
-    genes_summary <- data[
+    genes_summary = data[
       , .(
         cn = mean(total_cn[amplicon_type %in% include], na.rm = TRUE),
         N = length(unique(sample[amplicon_type %in% include]))
@@ -76,10 +76,10 @@ gcap.dotplot <- function(fCNA,
       by = by
     ][N > 0]
   }
-  genes_summary <- genes_summary[!is.na(genes_summary[[by]])]
+  genes_summary = genes_summary[!is.na(genes_summary[[by]])]
 
-  e <- substitute(filter)
-  p <- ggplot2::ggplot(data = genes_summary, ggplot2::aes(x = N, y = cn)) +
+  e = substitute(filter)
+  p = ggplot2::ggplot(data = genes_summary, ggplot2::aes(x = N, y = cn)) +
     ggplot2::geom_point(alpha = 0.5, size = 1.2, col = "black") +
     ggrepel::geom_label_repel(
       ggplot2::aes_string(label = by),

@@ -35,7 +35,7 @@ Cluster genomic regions by distance from region center
 }
 \examples{
 library(data.table)
-region <- data.table(
+region = data.table(
   chr = c("chr1", "chr2", "chr1"),
   start = c(1032, 992, 10000), end = c(4242, 1e6, 400023)
 )

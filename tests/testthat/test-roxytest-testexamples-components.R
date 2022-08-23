@@ -5,8 +5,8 @@ context("File R/components.R: @testexamples")
 test_that("Function gcap.extractComponents() @ L31", {
   
   set.seed(2021)
-  x <- c(rnorm(10, 0), rnorm(50, 1), rnorm(20, 4), rnorm(5, 10))
-  y <- gcap.extractComponents(x, max_comp = 5)
+  x = c(rnorm(10, 0), rnorm(50, 1), rnorm(20, 4), rnorm(5, 10))
+  y = gcap.extractComponents(x, max_comp = 5)
   y
   expect_equal(length(y), 2)
 })

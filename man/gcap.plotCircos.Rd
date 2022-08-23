@@ -51,17 +51,17 @@ Plot Circos
 library(gcap)
 if (require("circlize") && require("scales")) {
   data("ascn")
-  data <- ascn
+  data = ascn
 
   # Create fake data
   set.seed(1234)
-  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
-  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+  data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 
   gcap.plotCircos(rv)
 
   # Select genes to highlight in plot
-  r1 <- rv$getGeneSummary()
+  r1 = rv$getGeneSummary()
   gcap.plotCircos(rv, r1[circular == 1]$gene_id[1:10])
 
   gcap.plotCircos(rv, rv$data[, .(label = .N), by = .(band)][1:10])

@@ -8,20 +8,20 @@ test_that("Function gcap.dotplot() @ L41", {
   library(gcap)
   if (require("ggrepel") && require("cowplot")) {
     data("ascn")
-    data <- ascn
+    data = ascn
   
     # Create fake data
     set.seed(1234)
-    data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
-    rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+    data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
+    rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
   
-    p <- gcap.dotplot(rv, filter = cn > 60)
+    p = gcap.dotplot(rv, filter = cn > 60)
     p
-    p2 <- gcap.dotplot(rv, filter = cn > 60 | N > 15, by = "band")
+    p2 = gcap.dotplot(rv, filter = cn > 60 | N > 15, by = "band")
     p2
-    p3 <- gcap.dotplot(rv, filter = cn > 60 | N > 50, by = "chr")
+    p3 = gcap.dotplot(rv, filter = cn > 60 | N > 50, by = "chr")
     p3
-    p4 <- gcap.dotplot(rv, filter = cn > 60 | N > 3, by = "band", unique = TRUE)
+    p4 = gcap.dotplot(rv, filter = cn > 60 | N > 3, by = "band", unique = TRUE)
     p4
   }
   

@@ -36,7 +36,7 @@
 #'   )
 #' }
 #' }
-gcap.enrich <- function(geneList,
+gcap.enrich = function(geneList,
                         analysis_func = c("enricher", "fgsea"),
                         gene_encode = c("ensembl", "symbol"),
                         species = "Homo sapiens", category = "H", subcategory = "",
@@ -47,11 +47,11 @@ gcap.enrich <- function(geneList,
   .check_install("msigdbr")
   message("Check `msigdbr::msigdbr_collections()` for category list")
 
-  analysis_func <- match.arg(analysis_func)
-  gene_encode <- match.arg(gene_encode)
-  genome_build <- match.arg(genome_build)
+  analysis_func = match.arg(analysis_func)
+  gene_encode = match.arg(gene_encode)
+  genome_build = match.arg(genome_build)
 
-  msigdbr_df <- data.table::as.data.table(
+  msigdbr_df = data.table::as.data.table(
     msigdbr::msigdbr(
       species = species,
       category = category,
@@ -60,18 +60,18 @@ gcap.enrich <- function(geneList,
   )
 
   if (gene_encode == "ensembl") {
-    cols <- c("gs_name", "ensembl_gene")
+    cols = c("gs_name", "ensembl_gene")
   } else {
-    cols <- c("gs_name", "gene_symbol")
+    cols = c("gs_name", "gene_symbol")
   }
 
-  msigdbr_df <- msigdbr_df[, cols, with = FALSE]
-  colnames(msigdbr_df) <- c("term", "gene")
+  msigdbr_df = msigdbr_df[, cols, with = FALSE]
+  colnames(msigdbr_df) = c("term", "gene")
 
   if (is.list(geneList)) {
-    geneList <- lapply(geneList, genList)
+    geneList = lapply(geneList, genList)
   } else {
-    geneList <- genList(geneList)
+    geneList = genList(geneList)
   }
 
   if (analysis_func == "enricher") {
@@ -94,7 +94,7 @@ gcap.enrich <- function(geneList,
     }
   } else {
     # 需要全部基因有个rank值
-    msigdbr_list <- split(msigdbr_df$gene, f = msigdbr_df$term)
+    msigdbr_list = split(msigdbr_df$gene, f = msigdbr_df$term)
     message("NOTE: check https://bioconductor.org/packages/devel/bioc/vignettes/fgsea/inst/doc/fgsea-tutorial.html for visualization")
     if (is.list(geneList)) {
       lapply(geneList, function(x) {
@@ -106,12 +106,12 @@ gcap.enrich <- function(geneList,
   }
 }
 
-genList <- function(x) {
+genList = function(x) {
   if (is.null(names(x))) {
-    y <- seq_along(x)
-    names(y) <- x
+    y = seq_along(x)
+    names(y) = x
   } else {
-    y <- x
+    y = x
   }
   y
 }

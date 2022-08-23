@@ -41,11 +41,11 @@ Draw Gene Amplicon Distribution By User Specified Class
 }
 \examples{
 set.seed(1234)
-data <- data.frame(
+data = data.frame(
   sample = sample(LETTERS[1:10], 100, replace = TRUE),
   class = sample(c("nofocal", "noncircular", "circular"), 100, replace = TRUE),
   by = sample(1:4, 100, replace = TRUE)
 )
-p <- gcap.plotDistribution(data)
+p = gcap.plotDistribution(data)
 p
 }

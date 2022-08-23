@@ -23,12 +23,12 @@
 #' @export
 #' @examples
 #' set.seed(2021)
-#' x <- c(rnorm(10, 0), rnorm(50, 1), rnorm(20, 4), rnorm(5, 10))
-#' y <- gcap.extractComponents(x, max_comp = 5)
+#' x = c(rnorm(10, 0), rnorm(50, 1), rnorm(20, 4), rnorm(5, 10))
+#' y = gcap.extractComponents(x, max_comp = 5)
 #' y
 #' @testexamples
 #' expect_equal(length(y), 2)
-gcap.extractComponents <-
+gcap.extractComponents =
   function(dat,
            dist = "norm",
            seed = 2021L,
@@ -39,15 +39,15 @@ gcap.extractComponents <-
            nrep = 5,
            min_comp = 1,
            max_comp = 10) {
-    control <- new("FLXcontrol")
-    control@minprior <- min_prior
-    control@iter.max <- niter
+    control = new("FLXcontrol")
+    control@minprior = min_prior
+    control@iter.max = niter
 
     stopifnot(max_comp >= min_comp)
     set.seed(seed, kind = "L'Ecuyer-CMRG")
 
     if (dist == "norm") {
-      fit <-
+      fit =
         stepFlexmix_v2(
           dat ~ 1,
           model = flexmix::FLXMCnorm1(),
@@ -56,7 +56,7 @@ gcap.extractComponents <-
           control = control
         )
       if (inherits(fit, "stepFlexmix")) {
-        fit <- recur_fit_component(
+        fit = recur_fit_component(
           fit = fit, dist = dist,
           threshold = threshold,
           control = control,
@@ -64,7 +64,7 @@ gcap.extractComponents <-
         )
       }
     } else if (dist == "pois") {
-      fit <-
+      fit =
         stepFlexmix_v2(
           dat ~ 1,
           model = flexmix::FLXMCmvpois(),
@@ -73,7 +73,7 @@ gcap.extractComponents <-
           control = control
         )
       if (inherits(fit, "stepFlexmix")) {
-        fit <- recur_fit_component(
+        fit = recur_fit_component(
           fit = fit, dist = dist,
           threshold = threshold,
           control = control,
@@ -89,13 +89,13 @@ gcap.extractComponents <-
   }
 
 
-recur_fit_component <- function(fit, dist, threshold, control, model_selection = "BIC") {
-  fits <- fit
-  fit <- flexmix::getModel(fits, which = model_selection)
+recur_fit_component = function(fit, dist, threshold, control, model_selection = "BIC") {
+  fits = fit
+  fit = flexmix::getModel(fits, which = model_selection)
   message("Select ", fit@k, " according to ", model_selection, ".")
 
-  mu <- find_mu(fit)
-  sub_len <- sum(diff(mu) < threshold)
+  mu = find_mu(fit)
+  sub_len = sum(diff(mu) < threshold)
 
   if (sub_len > 0) {
     message("The model does not pass the threshold for mu difference of adjacent distribution.")
@@ -103,8 +103,8 @@ recur_fit_component <- function(fit, dist, threshold, control, model_selection =
   }
 
   while (sub_len > 0) {
-    K <- fit@k
-    fit <- tryCatch(flexmix::getModel(fits, which = as.character(K - sub_len)),
+    K = fit@k
+    fit = tryCatch(flexmix::getModel(fits, which = as.character(K - sub_len)),
       error = function(e) {
         # If the model is not called by user
         # Call it
@@ -126,25 +126,25 @@ recur_fit_component <- function(fit, dist, threshold, control, model_selection =
       }
     )
 
-    mu <- find_mu(fit)
-    sub_len <- sum(diff(mu) < threshold)
+    mu = find_mu(fit)
+    sub_len = sum(diff(mu) < threshold)
   }
 
   message("Finally, select ", fit@k, " after passing threshold ", threshold, ".")
   fit
 }
 
-find_mu <- function(fit) {
-  mu <- flexmix::parameters(fit)
+find_mu = function(fit) {
+  mu = flexmix::parameters(fit)
   if (is.matrix(mu)) {
-    mu <- mu[1, ]
+    mu = mu[1, ]
   }
-  mu <- sort(mu, decreasing = FALSE)
+  mu = sort(mu, decreasing = FALSE)
   mu
 }
 
-get_component_parameter <- function(x) {
-  paras <- flexmix::parameters(x)
+get_component_parameter = function(x) {
+  paras = flexmix::parameters(x)
   # weight is how many events assigned
   # to a cluster (component)
   # i.e. number of observations
@@ -153,104 +153,104 @@ get_component_parameter <- function(x) {
   # the cluster sizes indicate the number
   # of observations assigned to each of the
   # clusters according to the a-posteriori probabilities.
-  .get_weight <- function(mean, x) {
-    wt_tb <- table(flexmix::clusters(x))
-    wt <- as.numeric(wt_tb)
+  .get_weight = function(mean, x) {
+    wt_tb = table(flexmix::clusters(x))
+    wt = as.numeric(wt_tb)
     if (length(wt) == length(mean)) {
       return(wt)
     } else {
-      names(wt) <- names(wt_tb)
-      all_names <- as.character(seq_along(mean))
-      wt[setdiff(all_names, names(wt))] <- 0
+      names(wt) = names(wt_tb)
+      all_names = as.character(seq_along(mean))
+      wt[setdiff(all_names, names(wt))] = 0
       as.numeric(wt[sort(names(wt))])
     }
   }
 
   if (is.null(dim(paras))) {
     # Assume it is pois distribution
-    z <- data.table::data.table(
+    z = data.table::data.table(
       mean = as.numeric(paras)
     )
-    z$sd <- sqrt(z$mean)
-    z$n <- .get_weight(z$mean, x)
+    z$sd = sqrt(z$mean)
+    z$n = .get_weight(z$mean, x)
   } else {
     # Assume it is normal distribution
-    z <- data.table::data.table(
+    z = data.table::data.table(
       mean = as.numeric(paras[1, ]),
       sd = as.numeric(paras[2, ])
     )
-    z$n <- .get_weight(z$mean, x)
+    z$n = .get_weight(z$mean, x)
   }
   z
 }
 
 
 # stepFlex v2
-stepFlexmix_v2 <- function(..., k = NULL, nrep = 3, verbose = TRUE, drop = TRUE, unique = FALSE) {
-  MYCALL <- match.call()
-  MYCALL1 <- MYCALL
-  bestFlexmix <- function(...) {
-    z <- new("flexmix", logLik = -Inf)
-    logLiks <- rep(NA, length.out = nrep)
+stepFlexmix_v2 = function(..., k = NULL, nrep = 3, verbose = TRUE, drop = TRUE, unique = FALSE) {
+  MYCALL = match.call()
+  MYCALL1 = MYCALL
+  bestFlexmix = function(...) {
+    z = new("flexmix", logLik = -Inf)
+    logLiks = rep(NA, length.out = nrep)
     for (m in seq_len(nrep)) {
       if (verbose) {
         cat(" *")
       }
-      x <- try(flexmix(...), silent = TRUE)
+      x = try(flexmix(...), silent = TRUE)
       if (!is(x, "try-error")) {
-        logLiks[m] <- logLik(x)
+        logLiks[m] = logLik(x)
         if (logLik(x) > logLik(z)) {
-          z <- x
+          z = x
         }
       }
     }
     return(list(z = z, logLiks = logLiks))
   }
-  z <- list()
+  z = list()
   if (is.null(k)) {
-    RET <- bestFlexmix(...)
-    z[[1]] <- RET$z
-    logLiks <- as.matrix(RET$logLiks)
-    z[[1]]@call <- MYCALL
-    z[[1]]@control@nrep <- nrep
-    names(z) <- as.character(z[[1]]@k)
+    RET = bestFlexmix(...)
+    z[[1]] = RET$z
+    logLiks = as.matrix(RET$logLiks)
+    z[[1]]@call = MYCALL
+    z[[1]]@control@nrep = nrep
+    names(z) = as.character(z[[1]]@k)
     if (verbose) {
       cat("\n")
     }
   } else {
-    k <- as.integer(k)
-    logLiks <- matrix(nrow = length(k), ncol = nrep)
+    k = as.integer(k)
+    logLiks = matrix(nrow = length(k), ncol = nrep)
     for (n in seq_along(k)) {
-      ns <- as.character(k[n])
+      ns = as.character(k[n])
       if (verbose) {
         cat(k[n], ":")
       }
-      RET <- bestFlexmix(..., k = k[n])
-      z[[ns]] <- RET$z
-      logLiks[n, ] <- RET$logLiks
-      MYCALL1[["k"]] <- as.numeric(k[n])
-      z[[ns]]@call <- MYCALL1
-      z[[ns]]@control@nrep <- nrep
+      RET = bestFlexmix(..., k = k[n])
+      z[[ns]] = RET$z
+      logLiks[n, ] = RET$logLiks
+      MYCALL1[["k"]] = as.numeric(k[n])
+      z[[ns]]@call = MYCALL1
+      z[[ns]]@control@nrep = nrep
       if (verbose) {
         cat("\n")
       }
     }
   }
-  logLiks <- logLiks[is.finite(sapply(z, logLik)), , drop = FALSE]
-  z <- z[is.finite(sapply(z, logLik))]
-  rownames(logLiks) <- names(z)
+  logLiks = logLiks[is.finite(sapply(z, logLik)), , drop = FALSE]
+  z = z[is.finite(sapply(z, logLik))]
+  rownames(logLiks) = names(z)
   if (!length(z)) {
     stop("no convergence to a suitable mixture")
   }
   if (drop & (length(z) == 1)) {
     return(z[[1]])
   } else {
-    z <- return(new("stepFlexmix",
+    z = return(new("stepFlexmix",
       models = z, k = as.integer(names(z)),
       nrep = as.integer(nrep), logLiks = logLiks, call = MYCALL
     ))
     if (unique) {
-      z <- unique(z)
+      z = unique(z)
     }
     return(z)
   }

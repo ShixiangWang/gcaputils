@@ -63,23 +63,23 @@ Draw K-M Curve for fCNA Survival Comparison by Sample or Cytoband or Gene
 library(gcap)
 if (require("survminer") && require("IDConverter")) {
   data("ascn")
-  data <- ascn
+  data = ascn
 
   # Create fake data
   set.seed(1234)
-  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
-  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+  data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
   rv$convertGeneID()
 
-  surv_data <- data.frame(
+  surv_data = data.frame(
     sample = rv$sample_summary$sample,
     time = 3000 * abs(rnorm(nrow(rv$sample_summary))),
     status = sample(c(0, 1), nrow(rv$sample_summary), replace = TRUE)
   )
-  p <- gcap.plotKMcurve(rv, surv_data)
+  p = gcap.plotKMcurve(rv, surv_data)
   p
 
-  p2 <- gcap.plotKMcurve(rv, surv_data,
+  p2 = gcap.plotKMcurve(rv, surv_data,
     ID = "MYC",
     mat = rv$getGeneSummary(return_mat = TRUE)
   )

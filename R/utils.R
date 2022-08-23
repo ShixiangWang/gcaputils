@@ -1,5 +1,5 @@
-.check_install <- function(pkg, bioc = FALSE, ...) {
-  install_func <- if (bioc) BiocManager::install else utils::install.packages
+.check_install = function(pkg, bioc = FALSE, ...) {
+  install_func = if (bioc) BiocManager::install else utils::install.packages
   if (bioc) {
     .check_install("BiocManager")
   }
@@ -23,7 +23,7 @@
 #' @export
 #' @examples
 #' library(data.table)
-#' region <- data.table(
+#' region = data.table(
 #'   chr = c("chr1", "chr2", "chr1"),
 #'   start = c(1032, 992, 10000), end = c(4242, 1e6, 400023)
 #' )
@@ -35,36 +35,36 @@
 #' clusterGPosition(data.table(gene_id = c("KRAS", "EGFR", "MYC", "ERBB2", "GRB7")),
 #'   no_annotation = TRUE, simplify = TRUE
 #' )
-clusterGPosition <- function(dt, distance = 1e7,
+clusterGPosition = function(dt, distance = 1e7,
                              no_annotation = FALSE,
                              genome_build = c("hg38", "hg19"),
                              simplify = TRUE) {
-  dt <- if (data.table::is.data.table(dt)) data.table::copy(dt) else data.table::as.data.table(dt)
-  genome_build <- match.arg(genome_build)
+  dt = if (data.table::is.data.table(dt)) data.table::copy(dt) else data.table::as.data.table(dt)
+  genome_build = match.arg(genome_build)
   if (no_annotation) {
     stopifnot("gene_id" %in% colnames(dt))
-    target_genes <- readRDS(file.path(
+    target_genes = readRDS(file.path(
       system.file("extdata", package = "gcap"),
       paste0(genome_build, "_target_genes.rds")
     ))
     if (!startsWith(dt$gene_id[1], "ENSG")) {
       message("detected you have transformed ENSEMBL ID, also transforming gene annotation data")
-      opts <- getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
+      opts = getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
       options(IDConverter.datapath = opts)
-      target_genes$gene_id <- IDConverter::convert_hm_genes(target_genes$gene_id, genome_build = genome_build)
-      target_genes <- target_genes[!is.na(target_genes$gene_id), ]
+      target_genes$gene_id = IDConverter::convert_hm_genes(target_genes$gene_id, genome_build = genome_build)
+      target_genes = target_genes[!is.na(target_genes$gene_id), ]
     }
-    dt <- merge(dt, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
+    dt = merge(dt, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
     data.table::setcolorder(dt, c("chrom", "start", "end"))
   }
-  colnames(dt)[1:3] <- c("chr", "start", "end")
+  colnames(dt)[1:3] = c("chr", "start", "end")
   dt[, `:=`(x = as.integer(factor(chr)), y = (start + end) / 2)]
-  dst <- stats::as.dist(calc_dist(as.matrix(dt[, .(x, y)])))
-  cls <- stats::cutree(stats::hclust(dst, method = "average"), h = distance)
+  dst = stats::as.dist(calc_dist(as.matrix(dt[, .(x, y)])))
+  cls = stats::cutree(stats::hclust(dst, method = "average"), h = distance)
   if (simplify) {
     cls
   } else {
-    dt$cluster <- cls
+    dt$cluster = cls
     dt
   }
 }
@@ -90,15 +90,15 @@ clusterGPosition <- function(dt, distance = 1e7,
 #'
 #' @examples
 #' set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular"))
-set_default_factor <- function(class, ref_level = "nofocal") {
-  class <- data.table::fcase(class %in% c("circular", "possibly_circular"), "circular",
+set_default_factor = function(class, ref_level = "nofocal") {
+  class = data.table::fcase(class %in% c("circular", "possibly_circular"), "circular",
     class == "noncircular", "noncircular",
     default = "nofocal"
   )
   factor(class, levels = c(ref_level, setdiff(c("nofocal", "noncircular", "circular"), ref_level)))
 }
 
-factor_to_chrs <- function(x) {
+factor_to_chrs = function(x) {
   if (inherits(x, "factor")) as.character(x) else x
 }
 

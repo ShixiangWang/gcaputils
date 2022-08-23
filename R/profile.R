@@ -25,19 +25,19 @@
 #' library(gcap)
 #' if (require("ComplexHeatmap") && require("IDConverter")) {
 #'   data("ascn")
-#'   data <- ascn
+#'   data = ascn
 #'
 #'   # Create fake data
 #'   set.seed(1234)
-#'   data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
-#'   rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+#'   data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
+#'   rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 #'
-#'   data2 <- rv$getGeneSummary(return_mat = TRUE)
+#'   data2 = rv$getGeneSummary(return_mat = TRUE)
 #'   gcap.plotProfile(data2)
 #'
 #'   rv$convertGeneID()
-#'   data2 <- rv$getGeneSummary(return_mat = TRUE)
-#'   ht <- gcap.plotProfile(data2,
+#'   data2 = rv$getGeneSummary(return_mat = TRUE)
+#'   ht = gcap.plotProfile(data2,
 #'     samples = c("B", "A", "C", "D", "F"),
 #'     genes = rownames(data2)[1:10],
 #'     top_annotation = ComplexHeatmap::HeatmapAnnotation(
@@ -49,13 +49,13 @@
 #'   ht
 #'   ComplexHeatmap::draw(ht, merge_legends = TRUE)
 #'
-#'   data2 <- rv$getCytobandSummary(return_mat = TRUE)
+#'   data2 = rv$getCytobandSummary(return_mat = TRUE)
 #'   gcap.plotProfile(data2)
 #' }
 #' }
 #' @testexamples
 #' expect_type(ht, "S4")
-gcap.plotProfile <- function(data,
+gcap.plotProfile = function(data,
                              genes = NULL,
                              samples = NULL,
                              top_n = NULL,
@@ -72,7 +72,7 @@ gcap.plotProfile <- function(data,
   .check_install("ComplexHeatmap")
 
   if (!is.null(genes)) {
-    data <- data[genes, , drop = FALSE]
+    data = data[genes, , drop = FALSE]
     if (nrow(data) == 0) {
       warning("No gene left to plot", immediate. = TRUE)
       return(NULL)
@@ -80,26 +80,26 @@ gcap.plotProfile <- function(data,
   }
 
   if (!is.null(samples)) {
-    data <- data[, samples, drop = FALSE]
+    data = data[, samples, drop = FALSE]
   }
 
   if (!is.null(top_n)) {
-    top_n <- min(top_n, nrow(data))
-    data <- data[seq_len(top_n), ]
+    top_n = min(top_n, nrow(data))
+    data = data[seq_len(top_n), ]
   }
 
-  alter_fun <- list(
+  alter_fun = list(
     background = ComplexHeatmap::alter_graphic("rect", fill = "#CCCCCC"),
     circular = ComplexHeatmap::alter_graphic("rect", fill = col["circular"]),
     noncircular = ComplexHeatmap::alter_graphic("rect", fill = col["noncircular"])
   )
 
-  data2 <- as.data.frame(lapply(data, factor_to_chrs))
-  data2[is.na(data2)] <- ""
-  rownames(data2) <- rownames(data)
-  data <- data2
+  data2 = as.data.frame(lapply(data, factor_to_chrs))
+  data2[is.na(data2)] = ""
+  rownames(data2) = rownames(data)
+  data = data2
 
-  ht <- ComplexHeatmap::oncoPrint(data,
+  ht = ComplexHeatmap::oncoPrint(data,
     alter_fun = alter_fun, col = col,
     heatmap_legend_param = heatmap_legend_param,
     remove_empty_columns = remove_empty_columns,
