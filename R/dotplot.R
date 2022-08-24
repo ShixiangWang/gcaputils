@@ -6,7 +6,6 @@
 #' to add text labels.
 #' @param include amplicon type to include for plotting.
 #' @param unique if `TRUE`, count samples instead of genes.
-#' @param prob_cutoff,gap_cn thresholds for classify 'circular' and 'noncircular'.
 #' @param ... other parameters passing to `ggrepel::geom_label_repel()`.
 #'
 #' @return a ggplot.
@@ -42,18 +41,16 @@ gcap.dotplot = function(fCNA,
                          filter,
                          by = c("gene_id", "band", "chr"),
                          unique = FALSE,
-                         include = c("circular", "possibly_circular"),
-                         prob_cutoff = 0.5,
-                         gap_cn = 4L,
+                         include = c("circular"),
                          ...) {
   .check_install("ggrepel")
   .check_install("cowplot")
   stopifnot(inherits(fCNA, "fCNA") | is.data.frame(fCNA))
   if (is.data.frame(fCNA)) {
     data = fCNA
-    stopifnot(all(c("amplicon_type", "gene_id" %in% colnames(data))))
+    stopifnot(all(c("gene_class", "gene_id" %in% colnames(data))))
   } else {
-    data = fCNA$getGeneSummary(prob_cutoff, gap_cn, return_record = TRUE)
+    data = fCNA$data
   }
   by = match.arg(by)
   if (by == "chr") {
@@ -62,16 +59,16 @@ gcap.dotplot = function(fCNA,
   if (!unique) {
     genes_summary = data[
       , .(
-        cn = mean(total_cn[amplicon_type %in% include], na.rm = TRUE),
-        N = sum(amplicon_type %in% include, na.rm = TRUE)
+        cn = mean(total_cn[gene_class %in% include], na.rm = TRUE),
+        N = sum(gene_class %in% include, na.rm = TRUE)
       ),
       by = by
     ][N > 0]
   } else {
     genes_summary = data[
       , .(
-        cn = mean(total_cn[amplicon_type %in% include], na.rm = TRUE),
-        N = length(unique(sample[amplicon_type %in% include]))
+        cn = mean(total_cn[gene_class %in% include], na.rm = TRUE),
+        N = length(unique(sample[gene_class %in% include]))
       ),
       by = by
     ][N > 0]

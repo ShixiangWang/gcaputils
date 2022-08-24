@@ -9,9 +9,7 @@ gcap.dotplot(
   filter,
   by = c("gene_id", "band", "chr"),
   unique = FALSE,
-  include = c("circular", "possibly_circular"),
-  prob_cutoff = 0.5,
-  gap_cn = 4L,
+  include = c("circular"),
   ...
 )
 }
@@ -26,8 +24,6 @@ to add text labels.}
 \item{unique}{if \code{TRUE}, count samples instead of genes.}
 
 \item{include}{amplicon type to include for plotting.}
-
-\item{prob_cutoff, gap_cn}{thresholds for classify 'circular' and 'noncircular'.}
 
 \item{...}{other parameters passing to \code{ggrepel::geom_label_repel()}.}
 }

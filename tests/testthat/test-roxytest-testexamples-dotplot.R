@@ -2,7 +2,7 @@
 
 context("File R/dotplot.R: @testexamples")
 
-test_that("Function gcap.dotplot() @ L41", {
+test_that("Function gcap.dotplot() @ L40", {
   
   
   library(gcap)
