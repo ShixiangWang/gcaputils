@@ -6,14 +6,17 @@
 \usage{
 gcap.plotGenomeHeatmap(
   fCNA,
-  type = c("prob", "circ_freq", "noncirc_freq", "circ_cn", "noncirc_cn"),
   group = NULL,
+  type = c("prob", "circ_freq", "noncirc_freq", "circ_cn", "noncirc_cn"),
   highlights = NULL,
   total_n = NULL,
+  add_all = TRUE,
   draw = TRUE,
   bycol = TRUE,
+  sort = FALSE,
   w = 1e+06,
   title = "auto",
+  title_rot = 90,
   top_col = "red",
   max_val = NULL,
   genome_build = c("hg38", "hg19"),
@@ -23,13 +26,16 @@ gcap.plotGenomeHeatmap(
 \arguments{
 \item{fCNA}{a \href{gcap::fCNA}{fCNA} object.}
 
-\item{type}{data type to plot.}
-
 \item{group}{a group column for comparison, default is "sample".}
+
+\item{type}{data type to plot.}
 
 \item{highlights}{gene list or region (in \code{data.frame}) to highlight.}
 
 \item{total_n}{if not \code{NULL}, this is used for calculating percentage.}
+
+\item{add_all}{if \code{TRUE}, add freq barplot for noncircular and circular amplicons.
+This works better with \code{type = "prob"}.}
 
 \item{draw}{if \code{TRUE}, draw plot.}
 
@@ -38,6 +44,8 @@ gcap.plotGenomeHeatmap(
 \item{w}{window size.}
 
 \item{title}{title for heatmap legend.}
+
+\item{title_rot}{rotation of the title.}
 
 \item{top_col}{color setting.}
 
@@ -59,14 +67,17 @@ rendering plot.
 library(gcap)
 if (require("circlize") && require("scales")) {
   data("ascn")
-  data = ascn
+  data <- ascn
 
   # Create fake data
   set.seed(1234)
-  data$sample = sample(LETTERS[1:10], nrow(data), replace = TRUE)
-  rv = gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
+  data$sample <- sample(LETTERS[1:10], nrow(data), replace = TRUE)
+  rv <- gcap.ASCNworkflow(data, outdir = tempdir(), model = "XGB11")
 
-  gcap.plotGenomeHeatmap(rv, highlights = c("TP53", "EGFR", "ERBB2"))
+  gcap.plotGenomeHeatmap(rv,
+    highlights = c("TP53", "EGFR", "ERBB2"),
+    add_all = TRUE
+  )
 }
 }
 }
