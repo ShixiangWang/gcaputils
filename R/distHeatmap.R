@@ -152,7 +152,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
 
   dt_gene <- merge(ref, dt_gene, by = "gene_id")
   if (sort) {
-    dt_sort <- dt2[, list(N = length(unique(band[prob > 0.5]))),
+    dt_sort <- dt2[, list(N = length(unique(band[gene_class == "circular"]))),  # prob > 0.5
       by = list(group)
     ][order(N)]
     dt_gene[, group := factor(group, dt_sort$group)]
