@@ -7,7 +7,7 @@
 gcap.plotGenomeHeatmap(
   fCNA,
   group = NULL,
-  type = c("prob", "circ_freq", "noncirc_freq", "circ_cn", "noncirc_cn"),
+  type = c("class", "prob", "circ_freq", "noncirc_freq", "circ_cn", "noncirc_cn"),
   highlights = NULL,
   total_n = NULL,
   add_all = TRUE,
@@ -17,6 +17,7 @@ gcap.plotGenomeHeatmap(
   w = 1e+06,
   title = "auto",
   title_rot = 90,
+  fontsize = 8,
   top_col = "red",
   max_val = NULL,
   genome_build = c("hg38", "hg19"),
@@ -46,6 +47,8 @@ This works better with \code{type = "prob"}.}
 \item{title}{title for heatmap legend.}
 
 \item{title_rot}{rotation of the title.}
+
+\item{fontsize}{fontsize for highlight.}
 
 \item{top_col}{color setting.}
 

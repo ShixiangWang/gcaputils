@@ -17,6 +17,7 @@
 #' @param w window size.
 #' @param title title for heatmap legend.
 #' @param title_rot rotation of the title.
+#' @param fontsize fontsize for highlight.
 #' @param top_col color setting.
 #' @param max_val maximum value in heatmap.
 #' @references https://jokergoo.github.io/ComplexHeatmap-reference/book/genome-level-heatmap.html
@@ -44,7 +45,7 @@
 gcap.plotGenomeHeatmap <- function(fCNA,
                                    group = NULL,
                                    type = c(
-                                     "prob", "circ_freq",
+                                     "class", "prob", "circ_freq",
                                      "noncirc_freq", "circ_cn",
                                      "noncirc_cn"
                                    ),
@@ -57,6 +58,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
                                    w = 1e6,
                                    title = "auto",
                                    title_rot = 90,
+                                   fontsize = 8,
                                    top_col = "red",
                                    max_val = NULL,
                                    genome_build = c("hg38", "hg19"),
@@ -68,7 +70,11 @@ gcap.plotGenomeHeatmap <- function(fCNA,
 
   type <- match.arg(type)
   if (title == "auto") {
-    title <- type
+    if (type == "class") {
+      title <- "fCNA"
+    } else {
+      title <- type
+    }
   }
 
   library(circlize)
@@ -118,6 +124,8 @@ gcap.plotGenomeHeatmap <- function(fCNA,
   # i.e., non-amplicon data are not included in summary
   if (type == "prob") {
     dt_gene <- dt2[, list(value = mean(prob, na.rm = TRUE)), by = list(group, gene_id)]
+  } else if (type == "class") {
+    dt_gene <- dt2[, list(group, gene_id, value = gene_class)]
   } else if (type == "circ_cn") {
     dt_gene <- dt2[gene_class == "circular",
       list(value = mean(total_cn, na.rm = TRUE)),
@@ -152,10 +160,8 @@ gcap.plotGenomeHeatmap <- function(fCNA,
 
   dt_gene <- merge(ref, dt_gene, by = "gene_id")
   if (sort) {
-    dt_sort <- dt2[, list(N = length(unique(band[gene_class == "circular"]))),  # prob > 0.5
-      by = list(group)
-    ][order(N)]
-    dt_gene[, group := factor(group, dt_sort$group)]
+    dt_sort <- levels(gcap.plotDistribution(fCNA, x = group, plot = FALSE)$by)
+    dt_gene[, group := factor(group, dt_sort)]
   }
 
   bed_list <- lapply(split(dt_gene, dt_gene$group), function(dt) {
@@ -251,6 +257,8 @@ gcap.plotGenomeHeatmap <- function(fCNA,
     } else {
       colors <- colorRamp2(c(0, 0.5, max_val), c("blue", "white", top_col))
     }
+  } else if (type == "class") {
+    colors <- c("circular" = top_col, "noncircular" = "blue")
   } else {
     if (is.null(max_val)) {
       colors <- colorRamp2(
@@ -303,7 +311,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       ht_list <- ht_list + rowAnnotation(
         label = anno_mark(
           at = at, labels = labels,
-          labels_gp = gpar(fontsize = 8)
+          labels_gp = gpar(fontsize = fontsize)
         )
       )
     }
@@ -349,7 +357,7 @@ gcap.plotGenomeHeatmap <- function(fCNA,
       ht_list <- HeatmapAnnotation(
         label = anno_mark(
           at = at, labels = labels,
-          labels_gp = gpar(fontsize = 8),
+          labels_gp = gpar(fontsize = fontsize),
           side = "top"
         )
       ) %v%

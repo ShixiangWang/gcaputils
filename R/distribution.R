@@ -8,84 +8,90 @@
 #' @param set_order set order for `by`.
 #' @param set_label set labels to add sample count for `by`.
 #' @param palette color palette.
+#' @param plot if `FALSE`, return data instead of plot.
 #' @param ... other parameters passing to `ggplot2::geom_bar`.
 #'
 #' @return a ggplot object.
 #' @export
 #' @examples
 #' set.seed(1234)
-#' data = data.frame(
+#' data <- data.frame(
 #'   sample = sample(LETTERS[1:10], 100, replace = TRUE),
 #'   class = sample(c("nofocal", "noncircular", "circular"), 100, replace = TRUE),
 #'   by = sample(1:4, 100, replace = TRUE)
 #' )
-#' p = gcap.plotDistribution(data)
+#' p <- gcap.plotDistribution(data)
 #' p
 #' @testexamples
 #' expect_is(p, "ggplot")
-gcap.plotDistribution = function(fCNA,
+gcap.plotDistribution <- function(fCNA,
                                   x = NULL,
                                   x_size = 8,
                                   set_order = TRUE,
                                   set_label = TRUE,
                                   fill = TRUE,
                                   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
+                                  plot = TRUE,
                                   ...) {
   stopifnot(inherits(fCNA, "fCNA") | inherits(fCNA, "data.frame"))
   .check_install("ggplot2")
 
   if (!is.data.frame(fCNA)) {
-    data = fCNA$sample_summary[, c("sample", "class", x), with = FALSE]
-    colnames(data)[3] = "by"
+    data <- fCNA$sample_summary[, c("sample", "class", x), with = FALSE]
+    colnames(data)[3] <- "by"
   } else {
-    data = data.table::as.data.table(fCNA)[, c("sample", "class", "by"), with = FALSE]
+    data <- data.table::as.data.table(fCNA)[, c("sample", "class", "by"), with = FALSE]
   }
 
   data[, class := set_default_factor(class)]
-  class_lvls = levels(data$class)
-  dt_n = data[, .N, by = list(by, class)]
+  class_lvls <- levels(data$class)
+  dt_n <- data[, .N, by = list(by, class)]
 
   if (set_label) {
-    dt_s = dt_n[, list(N = sum(N, na.rm = TRUE)), by = list(by)]
-    dt_s$label = paste0(dt_s$by, " (N=", dt_s$N, ")")
-    labels = dt_s$label
-    names(labels) = dt_s$by
+    dt_s <- dt_n[, list(N = sum(N, na.rm = TRUE)), by = list(by)]
+    dt_s$label <- paste0(dt_s$by, " (N=", dt_s$N, ")")
+    labels <- dt_s$label
+    names(labels) <- dt_s$by
   } else {
-    labels = NULL
+    labels <- NULL
   }
 
   if (fill) {
-    dt_n = dt_n[, list(class, N = N / sum(N)), by = list(by)]
+    dt_n <- dt_n[, list(class, N = N / sum(N)), by = list(by)]
   }
 
   if (set_order) {
-    by_order = dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], 0)), by = list(by)]
-    by_order = by_order[order(-N)]$by
+    by_order <- dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], 0)), by = list(by)]
+    by_order <- by_order[order(-N)]$by
     dt_n[, by := factor(by, levels = by_order)]
   }
 
 
   if (length(class_lvls) == 3 && identical(palette, c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"))) {
-    palette = palette[-3]
+    palette <- palette[-3]
   }
 
-  p = ggplot2::ggplot(dt_n, ggplot2::aes(by, N, fill = class)) +
-    ggplot2::geom_bar(stat = "identity", ...) +
-    ggplot2::scale_fill_manual(values = palette) +
-    ggplot2::scale_y_continuous(expand = ggplot2::expansion()) +
-    ggplot2::theme_minimal(base_size = 14) +
-    ggplot2::scale_x_discrete(position = "top", labels = labels) + # guide = ggplot2::guide_axis(n.dodge = 2)
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_text(
-        angle = 45,
-        size = x_size,
-        vjust = 0,
-        hjust = 0,
-        color = "black",
-        face = "bold"
-      )
-    ) +
-    ggplot2::labs(x = NULL, y = NULL)
+  if (plot) {
+    p <- ggplot2::ggplot(dt_n, ggplot2::aes(by, N, fill = class)) +
+      ggplot2::geom_bar(stat = "identity", ...) +
+      ggplot2::scale_fill_manual(values = palette) +
+      ggplot2::scale_y_continuous(expand = ggplot2::expansion()) +
+      ggplot2::theme_minimal(base_size = 14) +
+      ggplot2::scale_x_discrete(position = "top", labels = labels) + # guide = ggplot2::guide_axis(n.dodge = 2)
+      ggplot2::theme(
+        axis.text.x = ggplot2::element_text(
+          angle = 45,
+          size = x_size,
+          vjust = 0,
+          hjust = 0,
+          color = "black",
+          face = "bold"
+        )
+      ) +
+      ggplot2::labs(x = NULL, y = NULL)
 
-  p
+    p
+  } else {
+    dt_n
+  }
 }

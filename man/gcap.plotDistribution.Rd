@@ -12,6 +12,7 @@ gcap.plotDistribution(
   set_label = TRUE,
   fill = TRUE,
   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
+  plot = TRUE,
   ...
 )
 }
@@ -31,6 +32,8 @@ gcap.plotDistribution(
 
 \item{palette}{color palette.}
 
+\item{plot}{if \code{FALSE}, return data instead of plot.}
+
 \item{...}{other parameters passing to \code{ggplot2::geom_bar}.}
 }
 \value{
@@ -41,11 +44,11 @@ Draw Gene Amplicon Distribution By User Specified Class
 }
 \examples{
 set.seed(1234)
-data = data.frame(
+data <- data.frame(
   sample = sample(LETTERS[1:10], 100, replace = TRUE),
   class = sample(c("nofocal", "noncircular", "circular"), 100, replace = TRUE),
   by = sample(1:4, 100, replace = TRUE)
 )
-p = gcap.plotDistribution(data)
+p <- gcap.plotDistribution(data)
 p
 }
