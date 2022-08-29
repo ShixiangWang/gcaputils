@@ -61,7 +61,8 @@ gcap.plotDistribution <- function(fCNA,
   }
 
   if (set_order) {
-    by_order <- dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], 0)), by = list(by)]
+    by_order <- dt_n[, list(N = ifelse("circular" %in% class, N[class == "circular"], if (fill) 0 else 0L)),
+                     by = list(by)]
     by_order <- by_order[order(-N)]$by
     dt_n[, by := factor(by, levels = by_order)]
   }
