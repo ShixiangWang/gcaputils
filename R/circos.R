@@ -61,7 +61,7 @@ gcap.plotCircos = function(fCNA,
     system.file("extdata", package = "gcap"),
     paste0(genome_build, "_target_genes.rds")
   ))
-  data = fCNA$getGeneSummary()
+  data = fCNA$data
   if (!startsWith(data$gene_id[1], "ENSG")) {
     message("detected you have transformed ENSEMBL ID, also transforming gene annotation data")
     opts = getOption("IDConverter.datapath", default = system.file("extdata", package = "IDConverter"))
@@ -70,7 +70,7 @@ gcap.plotCircos = function(fCNA,
     target_genes = target_genes[!is.na(target_genes$gene_id), ]
   }
   data_bed = merge(data, target_genes, by = "gene_id", all.x = TRUE, sort = FALSE)
-  data_bed[, amplicon_type := ifelse(circular > 0, "circular", "noncircular")]
+  data_bed[, amplicon_type := gene_class]
   data_bed = data_bed[!is.na(data_bed$gene_id) & data_bed$chrom %in% chrs,
     c(
       "chrom", "start", "end",
