@@ -7,10 +7,9 @@
 gcap.plotKMcurve(
   fCNA,
   surv_data,
-  merge_circular = TRUE,
   mat = NULL,
   ID = NULL,
-  focus = c("fCNA", "circular"),
+  focus = c("fCNA", "circular", "all"),
   palette = c("grey", "#0066CC", "#CC0033"),
   class_col = "class",
   ending_time = NULL,
@@ -29,9 +28,6 @@ representing time and status in \code{fCNA$sample_summary}.
 \item status must be 0 or 1.
 }}
 
-\item{merge_circular}{if \code{TRUE}, merge 'circular' and 'possibly_circular'
-as one class.}
-
 \item{mat}{a gene/cytoband-by-sample matrix like \code{data.frame}.}
 
 \item{ID}{a list of gene or cytoband IDs.}
@@ -44,7 +40,7 @@ noncircular and circular genes/cytobands are included to classify samples.}
 
 \item{class_col}{column name in \code{sample_summary} field for classification.
 If you set to other column (you want to run survival analysis with custom column),
-parameters like \code{merge_circular}, \code{ID}, \code{focus}
+parameters like \code{ID}, \code{focus}
 etc. will be omitted.}
 
 \item{ending_time}{survival analysis ending time. If a numeric ending

@@ -2,7 +2,7 @@
 
 context("File R/kmcurve.R: @testexamples")
 
-test_that("Function gcap.plotKMcurve() @ L61", {
+test_that("Function gcap.plotKMcurve() @ L59", {
   
   
   library(gcap)

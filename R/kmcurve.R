@@ -9,15 +9,13 @@
 #' - status must be 0 or 1.
 #' @param mat a gene/cytoband-by-sample matrix like `data.frame`.
 #' @param ID a list of gene or cytoband IDs.
-#' @param merge_circular if `TRUE`, merge 'circular' and 'possibly_circular'
-#' as one class.
 #' @param focus focal amplication type you focus on.
 #' Can be 'fCNA' or 'circular'. If 'fCNA' selected,
 #' noncircular and circular genes/cytobands are included to classify samples.
 #' @param palette plot color palette.
 #' @param class_col column name in `sample_summary` field for classification.
 #' If you set to other column (you want to run survival analysis with custom column),
-#' parameters like `merge_circular`, `ID`, `focus`
+#' parameters like `ID`, `focus`
 #' etc. will be omitted.
 #' @param ending_time survival analysis ending time. If a numeric ending
 #' is typed, all survival data longer than the ending time will be rewritten.
@@ -60,10 +58,9 @@
 #' expect_s3_class(p2, "ggsurvplot")
 gcap.plotKMcurve = function(fCNA,
                              surv_data,
-                             merge_circular = TRUE,
                              mat = NULL,
                              ID = NULL,
-                             focus = c("fCNA", "circular"),
+                             focus = c("fCNA", "circular", "all"),
                              palette = c("grey", "#0066CC", "#CC0033"),
                              class_col = "class",
                              ending_time = NULL,
@@ -92,11 +89,7 @@ gcap.plotKMcurve = function(fCNA,
       data = fCNA$sample_summary[, c("sample", class_col), with = FALSE]
       colnames(data)[2] = "class"
     }
-    if (merge_circular & class_col == "class") {
-      data[, class := set_default_factor(class)]
-    } else if (class_col == "class") {
-      data[, class := factor(class, c("nofocal", "noncircular", "possibly_circular", "circular"))]
-    }
+    data[, class := set_default_factor(class)]
   } else {
     if (is.null(mat)) {
       stop("When you want to specify the genes/cytobands, please input gene/cytoband-by-sample matrix to 'mat'")
@@ -107,18 +100,26 @@ gcap.plotKMcurve = function(fCNA,
     if (focus == "fCNA") {
       types = c("noncircular", "possibly_circular", "circular")
       labels = c("fCNA-", "fCNA+")
-    } else if (merge_circular) {
-      types = c("possibly_circular", "circular")
-      labels = c("circular-", "circular+")
-    } else {
+    } else if (focus == "circular"){
       types = "circular"
       labels = c("circular-", "circular+")
+    } else {
+      labels = c("nofocal", "noncircular", "circular")
     }
     data = mat[ID, , drop = FALSE]
-    data = plyr::ldply(data,
-      function(x) if (any(x %in% types)) labels[2] else labels[1],
-      .id = "sample"
-    )
+    if (focus == "all") {
+      data = plyr::ldply(data,
+        function(x) {
+          if (any(x %in% "circular")) "circular" 
+            else if (any(x %in% "noncircular")) "noncircular"
+            else "nofocal"
+        },
+        .id = "sample")
+    } else {
+      data = plyr::ldply(data,
+        function(x) if (any(x %in% types)) labels[2] else labels[1],
+        .id = "sample")
+    }
     colnames(data)[2] = "class"
     if (length(table(data$class)) <= 1) {
       stop("cannot genrate two groups for comparison")
