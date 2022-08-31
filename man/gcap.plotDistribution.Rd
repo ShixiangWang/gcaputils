@@ -13,6 +13,9 @@ gcap.plotDistribution(
   fill = TRUE,
   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
   plot = TRUE,
+  by_gene = FALSE,
+  genelist = NULL,
+  bar_width = 0.9,
   ...
 )
 }
@@ -33,6 +36,12 @@ gcap.plotDistribution(
 \item{palette}{color palette.}
 
 \item{plot}{if \code{FALSE}, return data instead of plot.}
+
+\item{by_gene}{sow distribution for genes.}
+
+\item{genelist}{only listed gene will be shown.}
+
+\item{bar_width}{set the width of bar, when it is \code{1}, the border can be removed.}
 
 \item{...}{other parameters passing to \code{ggplot2::geom_bar}.}
 }

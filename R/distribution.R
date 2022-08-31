@@ -9,6 +9,9 @@
 #' @param set_label set labels to add sample count for `by`.
 #' @param palette color palette.
 #' @param plot if `FALSE`, return data instead of plot.
+#' @param by_gene sow distribution for genes.
+#' @param genelist only listed gene will be shown.
+#' @param bar_width set the width of bar, when it is `1`, the border can be removed.
 #' @param ... other parameters passing to `ggplot2::geom_bar`.
 #'
 #' @return a ggplot object.
@@ -32,19 +35,35 @@ gcap.plotDistribution <- function(fCNA,
                                   fill = TRUE,
                                   palette = c("#CCCCCC", "#0066CC", "#FFCCCC", "#CC0033"),
                                   plot = TRUE,
+                                  by_gene = FALSE,
+                                  genelist = NULL,
+                                  bar_width = 0.9,
                                   ...) {
   stopifnot(inherits(fCNA, "fCNA") | inherits(fCNA, "data.frame"))
   .check_install("ggplot2")
 
   if (!is.data.frame(fCNA)) {
-    data <- fCNA$sample_summary[, c("sample", "class", x), with = FALSE]
-    colnames(data)[3] <- "by"
+    if (!by_gene) {
+      data <- fCNA$sample_summary[, c("sample", "class", x), with = FALSE]
+      colnames(data)[3] <- "by"
+    } else {
+      data <- fCNA$data[, c("sample", "gene_class", "gene_id"), with = FALSE]
+      if (!is.null(genelist)) {
+        data = data[gene_id %in% genelist]
+      }
+      colnames(data) = c("sample", "class", "by")
+    }
   } else {
     data <- data.table::as.data.table(fCNA)[, c("sample", "class", "by"), with = FALSE]
   }
 
-  data[, class := set_default_factor(class)]
-  class_lvls <- levels(data$class)
+  if (by_gene) {
+    class_lvls <- c("noncircular", "circular")
+    data[, class := factor(class, class_lvls)]
+  } else {
+    data[, class := set_default_factor(class)]
+    class_lvls <- levels(data$class)
+  }
   dt_n <- data[, .N, by = list(by, class)]
 
   if (set_label) {
@@ -74,7 +93,7 @@ gcap.plotDistribution <- function(fCNA,
 
   if (plot) {
     p <- ggplot2::ggplot(dt_n, ggplot2::aes(by, N, fill = class)) +
-      ggplot2::geom_bar(stat = "identity", ...) +
+      ggplot2::geom_bar(stat = "identity", width = bar_width, ...) +
       ggplot2::scale_fill_manual(values = palette) +
       ggplot2::scale_y_continuous(expand = ggplot2::expansion()) +
       ggplot2::theme_minimal(base_size = 14) +

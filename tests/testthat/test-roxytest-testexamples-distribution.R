@@ -2,7 +2,7 @@
 
 context("File R/distribution.R: @testexamples")
 
-test_that("Function gcap.plotDistribution() @ L27", {
+test_that("Function gcap.plotDistribution() @ L30", {
   
   set.seed(1234)
   data <- data.frame(
