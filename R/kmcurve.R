@@ -89,7 +89,9 @@ gcap.plotKMcurve = function(fCNA,
       data = fCNA$sample_summary[, c("sample", class_col), with = FALSE]
       colnames(data)[2] = "class"
     }
-    data[, class := set_default_factor(class)]
+    if (sum(c("nofocal", "noncircular", "circular") %in% data$class) > 1) {
+      data[, class := set_default_factor(class)]
+    }
   } else {
     if (is.null(mat)) {
       stop("When you want to specify the genes/cytobands, please input gene/cytoband-by-sample matrix to 'mat'")
