@@ -84,16 +84,21 @@ clusterGPosition = function(dt, distance = 1e7,
 #'
 #' @param class a vector of fCNA class.
 #' @param ref_level the reference level of factor.
+#' @param default a default value for input `NA`s.
 #'
 #' @return a vector.
 #' @export
 #'
 #' @examples
 #' set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular"))
-set_default_factor = function(class, ref_level = "nofocal") {
+#' set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular", NA))
+#' set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular", NA), 
+#'                    default = "nofocal")
+set_default_factor = function(class, ref_level = "nofocal", default = NA_character_) {
   class = data.table::fcase(class %in% c("circular", "possibly_circular"), "circular",
     class == "noncircular", "noncircular",
-    default = "nofocal"
+    class == "nofocal", "nofocal",
+    default = default
   )
   factor(class, levels = c(ref_level, setdiff(c("nofocal", "noncircular", "circular"), ref_level)))
 }

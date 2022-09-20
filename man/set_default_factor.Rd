@@ -4,12 +4,14 @@
 \alias{set_default_factor}
 \title{Set default factor level for fCNA class}
 \usage{
-set_default_factor(class, ref_level = "nofocal")
+set_default_factor(class, ref_level = "nofocal", default = NA_character_)
 }
 \arguments{
 \item{class}{a vector of fCNA class.}
 
 \item{ref_level}{the reference level of factor.}
+
+\item{default}{a default value for input \code{NA}s.}
 }
 \value{
 a vector.
@@ -19,4 +21,7 @@ Set default factor level for fCNA class
 }
 \examples{
 set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular"))
+set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular", NA))
+set_default_factor(c("nofocal", "noncircular", "circular", "nofocal", "possibly_circular", NA), 
+                   default = "nofocal")
 }
