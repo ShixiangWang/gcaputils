@@ -9,8 +9,8 @@
 #' - status must be 0 or 1.
 #' @param mat a gene/cytoband-by-sample matrix like `data.frame`.
 #' @param ID a list of gene or cytoband IDs.
-#' @param focus focal amplication type you focus on.
-#' Can be 'fCNA' or 'circular'. If 'fCNA' selected,
+#' @param focus focal amplication type you focus on. Typically used when the `ID` is not `NULL`.
+#' Can be 'fCNA', 'circular', 'all'. If 'fCNA' selected,
 #' noncircular and circular genes/cytobands are included to classify samples.
 #' @param palette plot color palette.
 #' @param class_col column name in `sample_summary` field for classification.
@@ -89,7 +89,10 @@ gcap.plotKMcurve = function(fCNA,
       data = fCNA$sample_summary[, c("sample", class_col), with = FALSE]
       colnames(data)[2] = "class"
     }
-    if (sum(c("nofocal", "noncircular", "circular") %in% data$class) > 1) {
+    if (focus == "circular") {
+      data[, class := ifelse(class %in% "circular", "circular+", "circular-")]
+      data[, class := factor(class, c("circular-", "circular+"))]
+    } else if (sum(c("nofocal", "noncircular", "circular") %in% data$class) > 1) {
       data[, class := set_default_factor(class)]
     }
   } else {

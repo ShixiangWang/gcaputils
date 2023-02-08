@@ -32,8 +32,8 @@ representing time and status in \code{fCNA$sample_summary}.
 
 \item{ID}{a list of gene or cytoband IDs.}
 
-\item{focus}{focal amplication type you focus on.
-Can be 'fCNA' or 'circular'. If 'fCNA' selected,
+\item{focus}{focal amplication type you focus on. Typically used when the \code{ID} is not \code{NULL}.
+Can be 'fCNA', 'circular', 'all'. If 'fCNA' selected,
 noncircular and circular genes/cytobands are included to classify samples.}
 
 \item{palette}{plot color palette.}
